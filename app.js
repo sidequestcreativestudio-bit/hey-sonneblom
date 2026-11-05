@@ -294,6 +294,8 @@ async function initAdmin() {
 console.log('SIGNED-IN USER:', session.user);
 console.log('PROFILE RESULT:', profile);
 console.log('PROFILE ERROR:', error);
+console.log('PROFILE ROLE:', profile?.role);
+console.log('USER ID:', session.user.id);
 
 if (error) {
   setAdminMessage(
@@ -322,7 +324,7 @@ async function main() {
   try {
     initSupabase();
     if (document.body.classList.contains('admin-page')) {
-      await initAdmin();
+      
       document.getElementById('login-form')?.addEventListener('submit', async event => {
         event.preventDefault();
         const form = event.currentTarget;
@@ -385,6 +387,16 @@ async function main() {
         form.elements.product_id.value = '';
         document.getElementById('form-heading').textContent = 'Add a product';
       });
+            // Load the dashboard after all event listeners are ready.
+      try {
+        await initAdmin();
+      } catch (error) {
+        console.error('Admin dashboard initialisation error:', error);
+        setAdminMessage(
+          `Dashboard could not finish loading: ${error.message}`,
+          true
+        );
+      }
     } else {
       initShop();
     }
