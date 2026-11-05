@@ -26,12 +26,108 @@ function initSupabase() {
   return supabaseClient;
 }
 
+function addProductToBag(product) {
+  cart.push({ id: product.id, name: product.name, price: Number(product.price), product_ref: product.product_ref });
+  const count = document.getElementById('cart-count');
+  if (count) count.textContent = String(cart.length);
+  showToast(`${product.name} added to your bag.`);
+}
+
+function ensureProductModal() {
+  let modal = document.getElementById('product-quick-view');
+  if (modal) return modal;
+
+  modal = document.createElement('div');
+  modal.id = 'product-quick-view';
+  modal.className = 'quick-view-overlay';
+  modal.hidden = true;
+  modal.setAttribute('aria-hidden', 'true');
+  modal.innerHTML = `
+    <section class="quick-view-dialog" role="dialog" aria-modal="true" aria-labelledby="quick-view-name" tabindex="-1">
+      <button class="quick-view-close" type="button" aria-label="Close product details">&times;</button>
+      <div class="quick-view-image-wrap"><img class="quick-view-image" alt=""></div>
+      <div class="quick-view-content">
+        <span class="quick-view-eyebrow">HEY SONNEBLOM · PRELOVED FIND</span>
+        <h2 id="quick-view-name"></h2>
+        <p class="quick-view-price"></p>
+        <dl class="quick-view-meta">
+          <div><dt>Brand</dt><dd data-detail="brand"></dd></div>
+          <div><dt>Size</dt><dd data-detail="size"></dd></div>
+          <div><dt>Reference</dt><dd data-detail="reference"></dd></div>
+        </dl>
+        <div class="quick-view-description-wrap"><h3>About this item</h3><p class="quick-view-description"></p></div>
+        <button class="quick-view-add" type="button">Add to Bag</button>
+        <p class="quick-view-note">A lovely find, available while stock lasts.</p>
+      </div>
+    </section>`;
+  document.body.append(modal);
+
+  modal.querySelector('.quick-view-close').addEventListener('click', closeProductQuickView);
+  modal.addEventListener('click', event => {
+    if (event.target === modal) closeProductQuickView();
+  });
+  modal.querySelector('.quick-view-add').addEventListener('click', () => {
+    if (!modal.currentProduct) return;
+    addProductToBag(modal.currentProduct);
+    closeProductQuickView();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !modal.hidden) closeProductQuickView();
+  });
+  return modal;
+}
+
+let quickViewReturnFocus = null;
+
+function openProductQuickView(product, trigger) {
+  const modal = ensureProductModal();
+  modal.currentProduct = product;
+  quickViewReturnFocus = trigger || document.activeElement;
+
+  const image = product.product_images?.[0]?.image_url;
+  const imageElement = modal.querySelector('.quick-view-image');
+  const imageWrap = modal.querySelector('.quick-view-image-wrap');
+  imageElement.hidden = !image;
+  imageElement.removeAttribute('src');
+  if (image) {
+    imageElement.src = image;
+    imageElement.alt = product.name || 'Product photo';
+    imageWrap.classList.remove('has-no-image');
+  } else {
+    imageWrap.classList.add('has-no-image');
+  }
+
+  modal.querySelector('#quick-view-name').textContent = product.name || 'Preloved find';
+  modal.querySelector('.quick-view-price').textContent = money(product.price);
+  modal.querySelector('[data-detail="brand"]').textContent = product.brand || 'Not specified';
+  modal.querySelector('[data-detail="size"]').textContent = product.size || 'Not specified';
+  modal.querySelector('[data-detail="reference"]').textContent = product.product_ref || 'Not assigned';
+  modal.querySelector('.quick-view-description').textContent = product.description || 'A lovely preloved find, selected with care. Contact us if you would like to know more.';
+
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('quick-view-open');
+  modal.querySelector('.quick-view-close').focus();
+}
+
+function closeProductQuickView() {
+  const modal = document.getElementById('product-quick-view');
+  if (!modal || modal.hidden) return;
+  modal.hidden = true;
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('quick-view-open');
+  if (quickViewReturnFocus && typeof quickViewReturnFocus.focus === 'function') quickViewReturnFocus.focus();
+}
+
 function productCard(product) {
   const image = product.product_images?.[0]?.image_url;
   const card = document.createElement('article');
   card.className = 'product-card';
   const media = document.createElement('div');
-  media.className = 'product-image';
+  media.className = 'product-image product-quick-view-trigger';
+  media.setAttribute('role', 'button');
+  media.setAttribute('tabindex', '0');
+  media.setAttribute('aria-label', `View details for ${product.name}`);
   if (image) {
     const img = document.createElement('img');
     img.src = image;
@@ -49,9 +145,19 @@ function productCard(product) {
   tag.className = 'condition-tag';
   tag.textContent = product.featured ? 'FEATURED FIND' : 'PRELOVED';
   media.append(tag);
+  media.addEventListener('click', () => openProductQuickView(product, media));
+  media.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openProductQuickView(product, media);
+    }
+  });
 
   const info = document.createElement('div');
-  info.className = 'product-info';
+  info.className = 'product-info product-quick-view-trigger';
+  info.tabIndex = 0;
+  info.setAttribute('role', 'button');
+  info.setAttribute('aria-label', `View details for ${product.name}`);
   const details = document.createElement('div');
   const name = document.createElement('h3');
   name.textContent = product.name;
@@ -61,17 +167,19 @@ function productCard(product) {
   const price = document.createElement('strong');
   price.textContent = money(product.price);
   info.append(details, price);
+  info.addEventListener('click', () => openProductQuickView(product, info));
+  info.addEventListener('keydown', event => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openProductQuickView(product, info);
+    }
+  });
 
   const button = document.createElement('button');
   button.className = 'add-button';
   button.type = 'button';
   button.textContent = 'Add to bag';
-  button.addEventListener('click', () => {
-    cart.push({ id: product.id, name: product.name, price: Number(product.price), product_ref: product.product_ref });
-    const count = document.getElementById('cart-count');
-    if (count) count.textContent = String(cart.length);
-    showToast(`${product.name} added to your bag.`);
-  });
+  button.addEventListener('click', () => addProductToBag(product));
   card.append(media, info, button);
   return card;
 }
@@ -81,27 +189,16 @@ async function loadPublicProducts() {
   if (!grid) return;
   grid.innerHTML = '<p class="loading-note">Loading lovely finds…</p>';
   try {
-    const categorySlug = document.body.dataset.category;
-    let query = supabaseClient
+    const { data, error } = await supabaseClient
       .from('products')
       .select('id, product_ref, name, brand, size, price, description, status, featured, created_at, product_images(image_url, display_order)')
-      .eq('status', 'available');
-
-    if (categorySlug) {
-      query = query
-        .select('id, product_ref, name, brand, size, price, description, status, featured, created_at, product_images(image_url, display_order), categories!inner(name, slug)')
-        .eq('categories.slug', categorySlug);
-    }
-
-    const { data, error } = await query
+      .eq('status', 'available')
       .order('featured', { ascending: false })
       .order('created_at', { ascending: false });
     if (error) throw error;
     grid.replaceChildren();
     if (!data?.length) {
-      grid.innerHTML = categorySlug
-        ? '<div class="category-empty"><span>🌻</span><h3>Something lovely is on its way</h3><p>There are no available items in this category just yet. Please check back soon.</p><a class="secondary-button" href="index.html#shop-categories">Browse all categories</a></div>'
-        : '<p class="empty-note">No items are available just yet. Please check back soon. 🌻</p>';
+      grid.innerHTML = '<p class="empty-note">No items are available just yet. Please check back soon. 🌻</p>';
       return;
     }
     data.forEach(product => {
@@ -109,9 +206,7 @@ async function loadPublicProducts() {
       grid.append(productCard(product));
     });
     const note = document.querySelector('.preview-note');
-    if (note) note.textContent = categorySlug
-      ? 'This collection updates automatically when new items are published in the seller dashboard. 🌻'
-      : 'Fresh finds, updated as soon as they are published in the seller dashboard.';
+    if (note) note.textContent = 'Fresh finds, updated as soon as they are published in the seller dashboard.';
     const label = document.querySelector('.demo-label');
     if (label) label.textContent = `${data.length} available ${data.length === 1 ? 'item' : 'items'}`;
   } catch (error) {
@@ -160,7 +255,7 @@ function setAdminMessage(message, isError = false) {
 async function loadAdminDashboard() {
   const { data: products, error } = await supabaseClient
     .from('products')
-    .select('id, product_ref, name, brand, category_id, size, price, status, featured, created_at, product_images(image_url, display_order)')
+    .select('id, product_ref, name, brand, size, price, status, featured, created_at, product_images(image_url, display_order)')
     .order('created_at', { ascending: false });
   if (error) throw error;
 
