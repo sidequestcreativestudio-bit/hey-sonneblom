@@ -285,14 +285,31 @@ async function initAdmin() {
     dashboard.hidden = true;
     return;
   }
-  const { data: profile, error } = await supabaseClient.from('profiles').select('full_name,role').eq('id', session.user.id).single();
-  if (error || profile?.role !== 'admin') {
-    await supabaseClient.auth.signOut();
-    loginPanel.hidden = false;
-    dashboard.hidden = true;
-    setAdminMessage('This account does not have administrator access.', true);
-    return;
-  }
+  const { data: profile, error } = await supabaseClient
+  .from('profiles')
+  .select('full_name, role')
+  .eq('id', session.user.id)
+  .single();
+
+console.log('SIGNED-IN USER:', session.user);
+console.log('PROFILE RESULT:', profile);
+console.log('PROFILE ERROR:', error);
+
+if (error) {
+  setAdminMessage(
+    `Could not retrieve administrator profile: ${error.message}`,
+    true
+  );
+  return;
+}
+
+if (String(profile?.role || '').trim().toLowerCase() !== 'admin') {
+  setAdminMessage(
+    `Administrator access denied. Role received: ${profile?.role || 'No role found'}`,
+    true
+  );
+  return;
+}
   loginPanel.hidden = true;
   dashboard.hidden = false;
   document.getElementById('admin-heading').textContent = `Good day, ${profile.full_name || session.user.email}`;
