@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en-ZA">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8edc9">
+  <meta name="description" content="Discover preloved fashion at Hey Sonneblom Thrifting Clothes.">
+  <title>Hey Sonneblom | Thrifting Clothes</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="announcement">A little sunshine, a second chance for lovely clothes 🌻</div>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="Hey Sonneblom home">
+      <span class="brand-flower" aria-hidden="true">🌻</span>
+      <span><strong>Hey Sonneblom</strong><small>THRIFTING CLOTHES</small></span>
+    </a>
+    <nav class="desktop-nav" aria-label="Main navigation">
+      <a href="#new-arrivals">New arrivals</a><a href="#shop-categories">Shop by category</a><a href="#how-it-works">How to order</a>
+    </nav>
+    <div class="header-actions"><button class="icon-button" aria-label="Open search" id="search-toggle">⌕</button><button class="cart-button" id="cart-open">Bag <span id="cart-count">0</span></button><button class="menu-button" id="menu-toggle" aria-label="Toggle menu">☰</button></div>
+  </header>
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation"><a href="#new-arrivals">New arrivals</a><a href="#shop-categories">Shop by category</a><a href="#how-it-works">How to order</a></nav>
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">PRELOVED FINDS • NEW FAVOURITES</span>
+        <h1>Good clothes deserve <em>another story.</em></h1>
+        <p>Find your next favourite piece without paying full price. Thoughtfully selected thrift clothing, with a little sunshine in every parcel.</p>
+        <a class="primary-button" href="#new-arrivals">Explore the latest finds <span>→</span></a>
+        <div class="hero-note"><span>🌼</span> New pieces added regularly</div>
+      </div>
+      <div class="hero-art" aria-label="Sunflower-inspired boutique illustration">
+        <div class="sun-disc"></div><div class="flower flower-one">🌻</div><div class="flower flower-two">🌼</div>
+        <div class="art-card"><span>PRELOVED</span><strong>LOVE IT<br>AGAIN.</strong><small>HEY SONNEBLOM</small></div>
+        <span class="spark spark-one">✳</span><span class="spark spark-two">✳</span>
+      </div>
+    </section>
+    <section class="benefits" aria-label="Shopping benefits"><div>🌻 Carefully chosen finds</div><div>📦 PUDO & PAXI delivery</div><div>🤎 Friendly personal service</div></section>
+    <section class="section" id="shop-categories">
+      <div class="section-heading"><div><span class="eyebrow">FIND YOUR KIND OF LOVELY</span><h2>Shop by category</h2></div><p>Little treasures, waiting for a new wardrobe.</p></div>
+      <div class="category-grid"><a class="category-tile tile-one" href="#new-arrivals"><span>01</span><strong>Tops & shirts</strong><b>Explore →</b></a><a class="category-tile tile-two" href="#new-arrivals"><span>02</span><strong>Dresses</strong><b>Explore →</b></a><a class="category-tile tile-three" href="#new-arrivals"><span>03</span><strong>Bottoms</strong><b>Explore →</b></a><a class="category-tile tile-four" href="#new-arrivals"><span>04</span><strong>Other finds</strong><b>Explore →</b></a></div>
+    </section>
+    <section class="section arrivals" id="new-arrivals">
+      <div class="section-heading"><div><span class="eyebrow">FRESH FROM THE RAIL</span><h2>New arrivals</h2></div><span class="demo-label">Preview products</span></div>
+      <div class="product-grid" id="product-grid">
+        <article class="product-card"><div class="product-image image-a"><span class="product-placeholder">YOUR<br>PHOTO<br>HERE</span><span class="condition-tag">PRELOVED</span></div><div class="product-info"><div><h3>Everyday floral top</h3><p>Size M · Sample listing</p></div><strong>R45.00</strong></div><button class="add-button" data-name="Everyday floral top" data-price="45">Add to bag</button></article>
+        <article class="product-card"><div class="product-image image-b"><span class="product-placeholder">YOUR<br>PHOTO<br>HERE</span><span class="condition-tag">PRELOVED</span></div><div class="product-info"><div><h3>Classic denim skirt</h3><p>Size 12 · Sample listing</p></div><strong>R60.00</strong></div><button class="add-button" data-name="Classic denim skirt" data-price="60">Add to bag</button></article>
+        <article class="product-card"><div class="product-image image-c"><span class="product-placeholder">YOUR<br>PHOTO<br>HERE</span><span class="condition-tag">PRELOVED</span></div><div class="product-info"><div><h3>Soft knit cardigan</h3><p>Size L · Sample listing</p></div><strong>R75.00</strong></div><button class="add-button" data-name="Soft knit cardigan" data-price="75">Add to bag</button></article>
+        <article class="product-card"><div class="product-image image-d"><span class="product-placeholder">YOUR<br>PHOTO<br>HERE</span><span class="condition-tag">PRELOVED</span></div><div class="product-info"><div><h3>Weekend cotton dress</h3><p>Size 14 · Sample listing</p></div><strong>R85.00</strong></div><button class="add-button" data-name="Weekend cotton dress" data-price="85">Add to bag</button></article>
+      </div>
+      <p class="preview-note">These are demonstration listings only. Real products and prices will come from Rachel's seller dashboard once the database is connected.</p>
+    </section>
+    <section class="order-strip" id="how-it-works"><div><span class="eyebrow">A SIMPLE LITTLE SHOPPING JOURNEY</span><h2>Found something you love?</h2><p>Add it to your bag or message us on WhatsApp. Choose local collection, PUDO or PAXI at checkout. Courier fees are added separately and confirmed before the order is finalised.</p></div><a class="secondary-button" href="#new-arrivals">Browse the shop</a></section>
+  </main>
+  <footer class="site-footer"><a class="brand" href="index.html"><span class="brand-flower">🌻</span><span><strong>Hey Sonneblom</strong><small>THRIFTING CLOTHES</small></span></a><p>Every piece deserves another story.</p><small>© <span id="year"></span> Hey Sonneblom. Made with sunshine.</small></footer>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
