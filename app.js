@@ -81,16 +81,27 @@ async function loadPublicProducts() {
   if (!grid) return;
   grid.innerHTML = '<p class="loading-note">Loading lovely finds…</p>';
   try {
-    const { data, error } = await supabaseClient
+    const categorySlug = document.body.dataset.category;
+    let query = supabaseClient
       .from('products')
       .select('id, product_ref, name, brand, size, price, description, status, featured, created_at, product_images(image_url, display_order)')
-      .eq('status', 'available')
+      .eq('status', 'available');
+
+    if (categorySlug) {
+      query = query
+        .select('id, product_ref, name, brand, size, price, description, status, featured, created_at, product_images(image_url, display_order), categories!inner(name, slug)')
+        .eq('categories.slug', categorySlug);
+    }
+
+    const { data, error } = await query
       .order('featured', { ascending: false })
       .order('created_at', { ascending: false });
     if (error) throw error;
     grid.replaceChildren();
     if (!data?.length) {
-      grid.innerHTML = '<p class="empty-note">No items are available just yet. Please check back soon. 🌻</p>';
+      grid.innerHTML = categorySlug
+        ? '<div class="category-empty"><span>🌻</span><h3>Something lovely is on its way</h3><p>There are no available items in this category just yet. Please check back soon.</p><a class="secondary-button" href="index.html#shop-categories">Browse all categories</a></div>'
+        : '<p class="empty-note">No items are available just yet. Please check back soon. 🌻</p>';
       return;
     }
     data.forEach(product => {
@@ -98,7 +109,9 @@ async function loadPublicProducts() {
       grid.append(productCard(product));
     });
     const note = document.querySelector('.preview-note');
-    if (note) note.textContent = 'Fresh finds, updated as soon as they are published in the seller dashboard.';
+    if (note) note.textContent = categorySlug
+      ? 'This collection updates automatically when new items are published in the seller dashboard. 🌻'
+      : 'Fresh finds, updated as soon as they are published in the seller dashboard.';
     const label = document.querySelector('.demo-label');
     if (label) label.textContent = `${data.length} available ${data.length === 1 ? 'item' : 'items'}`;
   } catch (error) {
@@ -147,7 +160,7 @@ function setAdminMessage(message, isError = false) {
 async function loadAdminDashboard() {
   const { data: products, error } = await supabaseClient
     .from('products')
-    .select('id, product_ref, name, brand, size, price, status, featured, created_at, product_images(image_url, display_order)')
+    .select('id, product_ref, name, brand, category_id, size, price, status, featured, created_at, product_images(image_url, display_order)')
     .order('created_at', { ascending: false });
   if (error) throw error;
 

@@ -38,3 +38,27 @@
 .danger-button{border:1px solid #b85a4d;background:#fff;color:#a33;border-radius:4px;padding:8px 11px;font:600 10px 'DM Sans';cursor:pointer}
 .danger-button:hover{background:#a33;color:#fff}
 @media(max-width:650px){.form-grid{grid-template-columns:1fr}.admin-product-row{grid-template-columns:58px minmax(0,1fr);gap:10px}.admin-product-row>img,.admin-product-placeholder{width:58px;height:58px}.admin-product-row .status-pill{grid-column:2}.admin-product-actions{grid-column:2}}
+
+
+/* Hey Sonneblom category collections */
+.category-hero{position:relative;overflow:hidden;padding:54px max(7vw,22px) 48px;text-align:center;background:radial-gradient(circle at 12% 22%,rgba(229,184,63,.15),transparent 18%),radial-gradient(circle at 88% 78%,rgba(82,107,67,.10),transparent 19%),linear-gradient(135deg,#fffdf7 0%,#f8edc9 100%);border-bottom:1px solid #e9dfc5}
+.category-hero:before,.category-hero:after{content:"✳";position:absolute;color:#c49a35;opacity:.42;font-size:42px}
+.category-hero:before{left:8%;top:25px}.category-hero:after{right:8%;bottom:18px}
+.category-hero .eyebrow{display:block}
+.category-hero h1{font:700 clamp(36px,5vw,54px)/1.1 'Playfair Display',serif;margin:13px 0 10px;color:#302d25}
+.category-hero p{max-width:590px;margin:0 auto;color:#777365;font-size:14px;line-height:1.75}
+.category-breadcrumb{padding:17px max(7vw,22px) 0;color:#777365;font-size:11px}
+.category-breadcrumb a{color:#526b43;text-decoration:none}
+.category-page .arrivals{background:#fffdf8;min-height:340px}
+.category-page .product-card{padding:10px;background:#fff;border:1px solid #eee5d2;border-radius:5px;box-shadow:0 8px 24px rgba(75,58,20,.045)}
+.category-page .product-image{border-radius:3px;background:#f7f0df}
+.category-page .product-info{padding:14px 3px 10px}
+.category-page .add-button{margin:0 3px 3px;width:calc(100% - 6px);border-radius:3px}
+.category-empty{grid-column:1/-1;text-align:center;padding:45px 20px;background:#fffaf0;border:1px dashed #d9c58d;border-radius:6px}
+.category-empty>span{font-size:35px}
+.category-empty h3{font:600 25px 'Playfair Display';margin:12px 0 8px}
+.category-empty p{color:#777365;font-size:13px}
+.category-empty .secondary-button{margin-top:8px}
+.category-back{display:inline-flex;margin-top:24px;color:#526b43;font-size:12px;font-weight:700;text-decoration:none}
+.category-back:hover{color:#a87517}
+@media(max-width:600px){.category-hero{padding:42px 22px 38px}.category-hero:before{left:5%;font-size:27px}.category-hero:after{right:5%;font-size:27px}.category-page .product-card{padding:7px}}
