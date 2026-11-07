@@ -250,6 +250,35 @@ function setCustomerMessage(message, isError = false) {
 function initCustomerAuth() {
   const accountSection = document.getElementById('customer-account');
   if (!accountSection) return;
+
+  const accountOverlay = document.getElementById('customer-account-overlay');
+  const openAccountButton = document.getElementById('account-open');
+  const closeAccountButton = document.getElementById('customer-account-close');
+
+  function openCustomerAccount() {
+    accountOverlay.classList.add('is-open');
+    accountOverlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    closeAccountButton.focus();
+  }
+
+  function closeCustomerAccount() {
+    accountOverlay.classList.remove('is-open');
+    accountOverlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    openAccountButton.focus();
+  }
+
+  openAccountButton?.addEventListener('click', openCustomerAccount);
+  closeAccountButton?.addEventListener('click', closeCustomerAccount);
+  accountOverlay?.addEventListener('click', event => {
+    if (event.target === accountOverlay) closeCustomerAccount();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && accountOverlay.classList.contains('is-open')) {
+      closeCustomerAccount();
+    }
+  });
   if (!window.supabase || !window.HEY_SONNEBLOM_CUSTOMER_SUPABASE_URL || !window.HEY_SONNEBLOM_CUSTOMER_SUPABASE_KEY) {
     setCustomerMessage('Customer account service is not configured yet. Please try again later.', true);
     return;
