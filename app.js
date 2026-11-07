@@ -1,6 +1,7 @@
 const toast = document.getElementById('toast');
 let toastTimer;
 let supabaseClient = null;
+let customerSupabaseClient = null;
 let cart = [];
 
 function showToast(message) {
@@ -238,6 +239,123 @@ async function loadPublicProducts() {
   }
 }
 
+
+function setCustomerMessage(message, isError = false) {
+  const el = document.getElementById('customer-auth-message');
+  if (!el) return;
+  el.textContent = message;
+  el.classList.toggle('error', isError);
+}
+
+function initCustomerAuth() {
+  const accountSection = document.getElementById('customer-account');
+  if (!accountSection) return;
+  if (!window.supabase || !window.HEY_SONNEBLOM_CUSTOMER_SUPABASE_URL || !window.HEY_SONNEBLOM_CUSTOMER_SUPABASE_KEY) {
+    setCustomerMessage('Customer account service is not configured yet. Please try again later.', true);
+    return;
+  }
+
+  customerSupabaseClient = window.supabase.createClient(
+    window.HEY_SONNEBLOM_CUSTOMER_SUPABASE_URL,
+    window.HEY_SONNEBLOM_CUSTOMER_SUPABASE_KEY
+  );
+
+  const form = document.getElementById('customer-auth-form');
+  const submit = document.getElementById('customer-auth-submit');
+  const logout = document.getElementById('customer-logout');
+  const nameField = document.getElementById('customer-full-name');
+  const phoneField = document.getElementById('customer-phone');
+  const modeSwitch = document.getElementById('customer-mode-switch');
+  let mode = 'register';
+
+  function setMode(nextMode) {
+    mode = nextMode;
+    const registering = mode === 'register';
+    nameField.closest('label').hidden = !registering;
+    nameField.required = registering;
+    phoneField.closest('label').hidden = !registering;
+    form.elements.password.autocomplete = registering ? 'new-password' : 'current-password';
+    submit.textContent = registering ? 'Create my account' : 'Sign in';
+    document.querySelectorAll('[data-customer-mode]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.customerMode === mode));
+    });
+    setCustomerMessage('');
+  }
+
+  document.querySelectorAll('[data-customer-mode]').forEach(button => {
+    button.addEventListener('click', () => setMode(button.dataset.customerMode));
+  });
+
+  function renderCustomerSession(session) {
+    const signedIn = !!session;
+    document.getElementById('customer-signed-out').hidden = signedIn;
+    document.getElementById('customer-signed-in').hidden = !signedIn;
+    if (signedIn) {
+      document.getElementById('customer-account-email').textContent = session.user.email || '';
+      form.hidden = true;
+      modeSwitch.hidden = true;
+    } else {
+      form.hidden = false;
+      modeSwitch.hidden = false;
+    }
+  }
+
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    submit.disabled = true;
+    setCustomerMessage(mode === 'register' ? 'Creating your account…' : 'Signing in…');
+    try {
+      const email = form.elements.email.value.trim();
+      const password = form.elements.password.value;
+      if (mode === 'register') {
+        const fullName = nameField.value.trim();
+        if (!fullName) throw new Error('Please enter your name.');
+        const { data, error } = await customerSupabaseClient.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: fullName, phone: phoneField.value.trim() } }
+        });
+        if (error) throw error;
+        setCustomerMessage(data.session
+          ? 'Your account has been created and you are signed in.'
+          : 'Registration received. Please check your email for the confirmation link before signing in.');
+      } else {
+        const { error } = await customerSupabaseClient.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        setCustomerMessage('You are signed in successfully.');
+      }
+      const { data: { session } } = await customerSupabaseClient.auth.getSession();
+      renderCustomerSession(session);
+    } catch (error) {
+      setCustomerMessage(error.message || 'We could not complete that request. Please try again.', true);
+    } finally {
+      submit.disabled = false;
+    }
+  });
+
+  logout.addEventListener('click', async () => {
+    logout.disabled = true;
+    const { error } = await customerSupabaseClient.auth.signOut();
+    logout.disabled = false;
+    if (error) {
+      setCustomerMessage(error.message, true);
+      return;
+    }
+    setCustomerMessage('You have signed out.');
+    const { data: { session } } = await customerSupabaseClient.auth.getSession();
+    renderCustomerSession(session);
+  });
+
+  setMode('register');
+  customerSupabaseClient.auth.getSession().then(({ data: { session }, error }) => {
+    if (error) setCustomerMessage(error.message, true);
+    else renderCustomerSession(session);
+  });
+  customerSupabaseClient.auth.onAuthStateChange((_event, session) => {
+    renderCustomerSession(session);
+  });
+}
+
 function initShop() {
   document.getElementById('year')?.append(String(new Date().getFullYear()));
   document.getElementById('menu-toggle')?.addEventListener('click', () => {
@@ -265,6 +383,7 @@ function initShop() {
       showToast('WhatsApp ordering will be enabled when the shop number is configured.');
     }
   });
+  initCustomerAuth();
   loadPublicProducts();
 }
 
