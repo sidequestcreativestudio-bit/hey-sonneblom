@@ -72,12 +72,66 @@
             <button class="primary-button" id="customer-auth-submit" type="submit">Create my account</button>
           </form>
         </div>
-       <div id="customer-signed-in" hidden>
+       
+<div id="customer-signed-in" hidden>
   <h3>Welcome to the Hey Sonneblom family! 🌻</h3>
   <p>It's lovely to have you here. Your little shopping space is ready!</p>
   <p>You are signed in as <strong id="customer-account-email"></strong>.</p>
-  <button class="secondary-button" id="customer-logout" type="button">Sign out</button>
+
+  <div class="customer-profile">
+    <h3>My Profile</h3>
+    <p>Keep your details up to date so we can make shopping easier for you.</p>
+
+    <form id="customer-profile-form" class="customer-auth-form">
+
+      <label>Full name
+        <input id="profile-full-name" name="full_name"
+          type="text" autocomplete="name" maxlength="120">
+      </label>
+
+      <label>Mobile number
+        <input id="profile-phone" name="phone"
+          type="tel" autocomplete="tel" maxlength="30">
+      </label>
+
+      <label>Street address
+        <input id="profile-street-address" name="street_address"
+          type="text" autocomplete="street-address" maxlength="200">
+      </label>
+
+      <label>Suburb
+        <input id="profile-suburb" name="suburb"
+          type="text" autocomplete="address-level3" maxlength="100">
+      </label>
+
+      <label>Town / City
+        <input id="profile-city" name="city"
+          type="text" autocomplete="address-level2" maxlength="100">
+      </label>
+
+      <label>Province
+        <input id="profile-province" name="province"
+          type="text" maxlength="100" placeholder="e.g. Eastern Cape">
+      </label>
+
+      <label>Postal code
+        <input id="profile-postal-code" name="postal_code"
+          type="text" autocomplete="postal-code" maxlength="10">
+      </label>
+
+      <button class="primary-button" id="customer-profile-save" type="submit">
+        Save my profile
+      </button>
+
+      <p id="customer-profile-message" role="status" aria-live="polite"></p>
+    </form>
+  </div>
+
+  <button class="secondary-button" id="customer-logout" type="button">
+    Sign out
+  </button>
 </div>
+
         <p id="customer-auth-message" class="form-message" role="status" aria-live="polite"></p>
       </div>
     </section>
