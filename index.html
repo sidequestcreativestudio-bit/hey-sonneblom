@@ -28,6 +28,8 @@
     .customer-auth-form input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid #d8d1bd;border-radius:9px;background:#fff;font:inherit}
     .customer-auth-form input:focus{outline:2px solid #d6a92e;outline-offset:1px}
     .customer-auth-form button{justify-self:start;margin-top:5px}
+    .customer-forgot-password{margin-top:14px;padding:0;border:0;background:transparent;color:#344b36;text-decoration:underline;font:inherit;font-size:.92rem;cursor:pointer}
+    .customer-forgot-password:hover{color:#8a6816}
     .customer-account-note{margin:18px 0 0;color:#716b5c;font-size:.9rem}
     #customer-auth-message{min-height:1.4em;margin:14px 0 0}
     #customer-auth-message.error{color:#a52d2d}
@@ -71,8 +73,25 @@
             <label>Password<input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
             <button class="primary-button" id="customer-auth-submit" type="submit">Create my account</button>
           </form>
+          <button class="customer-forgot-password" id="customer-forgot-password" type="button" hidden>Forgot password?</button>
         </div>
        
+
+<div id="customer-password-reset" hidden>
+  <h3>Choose a new password</h3>
+  <p>You're almost back in your little shopping space. 🌻</p>
+  <form id="customer-password-reset-form" class="customer-auth-form">
+    <label>New password
+      <input name="new_password" type="password" autocomplete="new-password" minlength="8" required>
+    </label>
+    <label>Confirm new password
+      <input name="confirm_password" type="password" autocomplete="new-password" minlength="8" required>
+    </label>
+    <button class="primary-button" id="customer-password-reset-submit" type="submit">Save new password</button>
+  </form>
+  <p id="customer-password-reset-message" role="status" aria-live="polite"></p>
+</div>
+
 <div id="customer-signed-in" hidden>
   <h3>Welcome to the Hey Sonneblom family! 🌻</h3>
   <p>It's lovely to have you here. Your little shopping space is ready!</p>
