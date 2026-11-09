@@ -329,6 +329,12 @@ const profileForm = document.getElementById('customer-profile-form');
 const profileSave = document.getElementById('customer-profile-save');
 const profileMessage = document.getElementById('customer-profile-message');
 
+const forgotPasswordButton = document.getElementById('customer-forgot-password');
+const passwordResetPanel = document.getElementById('customer-password-reset');
+const passwordResetForm = document.getElementById('customer-password-reset-form');
+const passwordResetSubmit = document.getElementById('customer-password-reset-submit');
+const passwordResetMessage = document.getElementById('customer-password-reset-message');
+
 let currentCustomerUser = null;
 let mode = 'register';
 
@@ -341,6 +347,7 @@ let mode = 'register';
     phoneField.closest('label').hidden = !registering;
     form.elements.password.autocomplete = registering ? 'new-password' : 'current-password';
     submit.textContent = registering ? 'Create my account' : 'Sign in';
+    if (forgotPasswordButton) forgotPasswordButton.hidden = registering;
 
     document.querySelectorAll('[data-customer-mode]').forEach(button => {
       button.setAttribute('aria-pressed', String(button.dataset.customerMode === mode));
@@ -352,6 +359,79 @@ let mode = 'register';
   document.querySelectorAll('[data-customer-mode]').forEach(button => {
     button.addEventListener('click', () => setMode(button.dataset.customerMode));
   });
+
+  
+forgotPasswordButton?.addEventListener('click', async () => {
+  const email = form.elements.email.value.trim();
+
+  if (!email) {
+    setCustomerMessage('Please enter your email address first.', true);
+    form.elements.email.focus();
+    return;
+  }
+
+  forgotPasswordButton.disabled = true;
+  setCustomerMessage('Sending your password reset email…');
+
+  try {
+    const redirectTo = `${window.location.origin}${window.location.pathname}`;
+
+    const { error } = await customerSupabaseClient.auth.resetPasswordForEmail(
+      email,
+      { redirectTo }
+    );
+
+    if (error) throw error;
+
+    setCustomerMessage(
+      'If an account exists for that email address, a password reset link will be sent. Please check your inbox.'
+    );
+  } catch (error) {
+    console.error('Password reset request error:', error);
+    setCustomerMessage(error.message || 'We could not send the password reset email. Please try again.', true);
+  } finally {
+    forgotPasswordButton.disabled = false;
+  }
+});
+
+passwordResetForm?.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const newPassword = passwordResetForm.elements.new_password.value;
+  const confirmPassword = passwordResetForm.elements.confirm_password.value;
+
+  if (newPassword !== confirmPassword) {
+    passwordResetMessage.textContent = 'The passwords do not match. Please try again.';
+    return;
+  }
+
+  passwordResetSubmit.disabled = true;
+  passwordResetMessage.textContent = 'Updating your password…';
+
+  try {
+    const { error } = await customerSupabaseClient.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) throw error;
+
+    await customerSupabaseClient.auth.signOut();
+
+    passwordResetForm.reset();
+    passwordResetPanel.hidden = true;
+    document.getElementById('customer-signed-out').hidden = false;
+
+    setMode('login');
+    setCustomerMessage('Your password has been updated. Please sign in with your new password.');
+    passwordResetMessage.textContent = '';
+
+  } catch (error) {
+    console.error('Password update error:', error);
+    passwordResetMessage.textContent = error.message || 'We could not update your password. Please try again.';
+  } finally {
+    passwordResetSubmit.disabled = false;
+  }
+});
 
   
 async function loadCustomerProfile(user) {
@@ -516,9 +596,24 @@ profileForm.addEventListener('submit', async event => {
     else renderCustomerSession(session);
   });
 
-  customerSupabaseClient.auth.onAuthStateChange((_event, session) => {
-    renderCustomerSession(session);
-  });
+  customerSupabaseClient.auth.onAuthStateChange((event, session) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    currentCustomerUser = null;
+    document.getElementById('customer-signed-out').hidden = true;
+    document.getElementById('customer-signed-in').hidden = true;
+    passwordResetPanel.hidden = false;
+    passwordResetMessage.textContent = '';
+    passwordResetForm?.elements.new_password.focus();
+    return;
+  }
+
+  if (event === 'SIGNED_OUT' && passwordResetPanel) {
+    passwordResetPanel.hidden = true;
+    document.getElementById('customer-signed-out').hidden = false;
+  }
+
+  renderCustomerSession(session);
+});
 }
 
 function initShop() {
