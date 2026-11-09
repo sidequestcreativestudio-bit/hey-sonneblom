@@ -323,8 +323,14 @@ function initCustomerAuth() {
   const logout = document.getElementById('customer-logout');
   const nameField = document.getElementById('customer-full-name');
   const phoneField = document.getElementById('customer-phone');
-  const modeSwitch = document.getElementById('customer-mode-switch');
-  let mode = 'register';
+ const modeSwitch = document.getElementById('customer-mode-switch');
+
+const profileForm = document.getElementById('customer-profile-form');
+const profileSave = document.getElementById('customer-profile-save');
+const profileMessage = document.getElementById('customer-profile-message');
+
+let currentCustomerUser = null;
+let mode = 'register';
 
   function setMode(nextMode) {
     mode = nextMode;
@@ -347,22 +353,107 @@ function initCustomerAuth() {
     button.addEventListener('click', () => setMode(button.dataset.customerMode));
   });
 
-  function renderCustomerSession(session) {
-    const signedIn = !!session;
+  
+async function loadCustomerProfile(user) {
+  if (!user || !profileForm) return;
 
-    document.getElementById('customer-signed-out').hidden = signedIn;
-    document.getElementById('customer-signed-in').hidden = !signedIn;
+  profileMessage.textContent = 'Loading your profile…';
 
-    if (signedIn) {
-      document.getElementById('customer-account-email').textContent = session.user.email || '';
-      form.hidden = true;
-      modeSwitch.hidden = true;
-    } else {
-      form.hidden = false;
-      modeSwitch.hidden = false;
-    }
+  const { data, error } = await customerSupabaseClient
+    .from('customer_profiles')
+    .select('full_name, phone, email, street_address, suburb, city, province, postal_code')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Customer profile loading error:', error);
+    profileMessage.textContent = 'We could not load your profile. Please try again.';
+    return;
   }
 
+  profileForm.elements.full_name.value =
+    data?.full_name || user.user_metadata?.full_name || '';
+
+  profileForm.elements.phone.value =
+    data?.phone || user.user_metadata?.phone || '';
+
+  profileForm.elements.street_address.value = data?.street_address || '';
+  profileForm.elements.suburb.value = data?.suburb || '';
+  profileForm.elements.city.value = data?.city || '';
+  profileForm.elements.province.value = data?.province || '';
+  profileForm.elements.postal_code.value = data?.postal_code || '';
+
+  profileMessage.textContent = '';
+}
+
+function renderCustomerSession(session) {
+  const signedIn = !!session;
+
+  currentCustomerUser = session?.user || null;
+
+  document.getElementById('customer-signed-out').hidden = signedIn;
+  document.getElementById('customer-signed-in').hidden = !signedIn;
+
+  if (signedIn) {
+    document.getElementById('customer-account-email').textContent =
+      session.user.email || '';
+
+    form.hidden = true;
+    modeSwitch.hidden = true;
+
+    loadCustomerProfile(session.user);
+  } else {
+    form.hidden = false;
+    modeSwitch.hidden = false;
+
+    if (profileForm) profileForm.reset();
+    if (profileMessage) profileMessage.textContent = '';
+  }
+}
+
+
+profileForm.addEventListener('submit', async event => {
+  event.preventDefault();
+
+  if (!currentCustomerUser) {
+    profileMessage.textContent = 'Please sign in before saving your profile.';
+    return;
+  }
+
+  profileSave.disabled = true;
+  profileMessage.textContent = 'Saving your details…';
+
+  try {
+    const payload = {
+      id: currentCustomerUser.id,
+      email: currentCustomerUser.email || '',
+      full_name: profileForm.elements.full_name.value.trim(),
+      phone: profileForm.elements.phone.value.trim(),
+      street_address: profileForm.elements.street_address.value.trim(),
+      suburb: profileForm.elements.suburb.value.trim(),
+      city: profileForm.elements.city.value.trim(),
+      province: profileForm.elements.province.value.trim(),
+      postal_code: profileForm.elements.postal_code.value.trim(),
+      updated_at: new Date().toISOString()
+    };
+
+    const { error } = await customerSupabaseClient
+      .from('customer_profiles')
+      .upsert(payload, { onConflict: 'id' });
+
+    if (error) throw error;
+
+    profileMessage.textContent = 'Your profile has been saved successfully! 🌻';
+  } catch (error) {
+    console.error('Customer profile saving error:', error);
+    profileMessage.textContent =
+      error.message || 'We could not save your profile. Please try again.';
+  } finally {
+    profileSave.disabled = false;
+  }
+});
+
+  
   form.addEventListener('submit', async event => {
     event.preventDefault();
     submit.disabled = true;
