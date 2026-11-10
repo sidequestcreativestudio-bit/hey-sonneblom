@@ -374,7 +374,7 @@ forgotPasswordButton?.addEventListener('click', async () => {
   setCustomerMessage('Sending your password reset email…');
 
   try {
-    const redirectTo = `${window.location.origin}${window.location.pathname}`;
+    const redirectTo = 'https://sidequestcreativestudio-bit.github.io/hey-sonneblom/';
 
     const { error } = await customerSupabaseClient.auth.resetPasswordForEmail(
       email,
