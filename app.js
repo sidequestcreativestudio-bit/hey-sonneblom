@@ -2,7 +2,28 @@ const toast = document.getElementById('toast');
 let toastTimer;
 let supabaseClient = null;
 let customerSupabaseClient = null;
+const CART_STORAGE_KEY = 'heySonneblomCart';
+
 let cart = [];
+
+try {
+  const savedCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || '[]');
+  cart = Array.isArray(savedCart) ? savedCart : [];
+} catch (error) {
+  console.error('Could not restore shopping bag:', error);
+  cart = [];
+}
+
+function saveCart() {
+  localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+}
+
+function updateCartCount() {
+  const count = document.getElementById('cart-count');
+  if (count) {
+    count.textContent = String(cart.length);
+  }
+}
 
 function showToast(message) {
   if (!toast) return;
@@ -28,14 +49,27 @@ function initSupabase() {
 }
 
 function addProductToBag(product) {
+  const alreadyAdded = cart.some(item => item.id === product.id);
+
+  if (alreadyAdded) {
+    showToast('This item is already in your bag. 🌻');
+    return;
+  }
+
   cart.push({
     id: product.id,
     name: product.name,
+    brand: product.brand || '',
+    size: product.size || '',
     price: Number(product.price),
-    product_ref: product.product_ref
+    product_ref: product.product_ref,
+    image_url: product.product_images?.[0]?.image_url || '',
+    quantity: 1
   });
-  const count = document.getElementById('cart-count');
-  if (count) count.textContent = String(cart.length);
+
+  saveCart();
+  updateCartCount();
+
   showToast(`${product.name} added to your bag.`);
 }
 
@@ -617,8 +651,9 @@ profileForm.addEventListener('submit', async event => {
 }
 
 function initShop() {
-  document.getElementById('year')?.append(String(new Date().getFullYear()));
+  updateCartCount();
 
+  document.getElementById('year')?.append(String(new Date().getFullYear()));
   document.getElementById('menu-toggle')?.addEventListener('click', () => {
     document.getElementById('mobile-nav')?.classList.toggle('open');
   });
