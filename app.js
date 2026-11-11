@@ -667,23 +667,50 @@ function initShop() {
     cards.forEach(card => card.hidden = !card.textContent.toLowerCase().includes(query));
   });
 
-  document.getElementById('cart-open')?.addEventListener('click', () => {
-    if (!cart.length) {
-      showToast('Your bag is empty for now.');
-      return;
-    }
+  
+document.getElementById('cart-open')?.addEventListener('click', () => {
+  const overlay = document.getElementById('cart-overlay');
+  const itemsContainer = document.getElementById('cart-items');
+  const subtotalElement = document.getElementById('cart-subtotal');
+  const countElement = document.getElementById('cart-item-count');
 
-    const summary = cart.map(item => `${item.name} (${money(item.price)})`).join('\n');
-    const total = cart.reduce((sum, item) => sum + item.price, 0);
-    const message = `Hello Hey Sonneblom! I would like to enquire about:\n${summary}\nClothing subtotal: ${money(total)}`;
-    const phone = document.body.dataset.whatsapp;
+  const savedCart = JSON.parse(localStorage.getItem('heySonneblomCart') || '[]');
 
-    if (phone) {
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, '_blank', 'noopener');
-    } else {
-      showToast('WhatsApp ordering will be enabled when the shop number is configured.');
-    }
-  });
+  if (!savedCart.length) {
+    itemsContainer.innerHTML = '<p>Your bag is empty for now.</p>';
+    subtotalElement.textContent = money(0);
+    countElement.textContent = '0 items';
+  } else {
+    itemsContainer.innerHTML = savedCart.map((item, index) => `
+      <div class="cart-item">
+        <div class="cart-item-details">
+          <strong>${item.name}</strong>
+          <p>${item.brand || ''} · Size ${item.size || ''}</p>
+          <span>${money(Number(item.price) || 0)}</span>
+          <p>Quantity: ${Number(item.quantity) || 1}</p>
+        </div>
+      </div>
+    `).join('');
+
+    const total = savedCart.reduce(
+      (sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1),
+      0
+    );
+
+    subtotalElement.textContent = money(total);
+
+    const itemCount = savedCart.reduce(
+      (sum, item) => sum + (Number(item.quantity) || 1),
+      0
+    );
+
+    countElement.textContent = `${itemCount} item${itemCount === 1 ? '' : 's'}`;
+  }
+
+  overlay.classList.add('is-open');
+  overlay.setAttribute('aria-hidden', 'false');
+});
+
 
   initCustomerAuth();
   loadPublicProducts();
