@@ -711,6 +711,25 @@ document.getElementById('cart-open')?.addEventListener('click', () => {
   overlay.setAttribute('aria-hidden', 'false');
 });
 
+  
+// Phase 6.2: Shopping Bag Close Controls
+const cartOverlay = document.getElementById('cart-overlay');
+
+function closeShoppingBag() {
+  cartOverlay?.classList.remove('is-open');
+  cartOverlay?.setAttribute('aria-hidden', 'true');
+}
+
+document.getElementById('cart-close')?.addEventListener('click', closeShoppingBag);
+
+document.getElementById('cart-continue-shopping')?.addEventListener('click', closeShoppingBag);
+
+cartOverlay?.addEventListener('click', (event) => {
+  if (event.target === cartOverlay) {
+    closeShoppingBag();
+  }
+});
+
 
   initCustomerAuth();
   loadPublicProducts();
