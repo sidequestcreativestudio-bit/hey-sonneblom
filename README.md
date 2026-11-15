@@ -12,11 +12,13 @@ The visual identity uses a warm boutique style with cream and ivory backgrounds,
 
 ## Current project status
 
-- **Storefront Phases 1–4:** Complete and field-tested.
-- **Phase 5: Customer Accounts and Profiles:** Core functionality implemented. Profile save and reload tested successfully. Privacy and remaining account checks are outstanding.
-- **Next focus:** Complete customer-account security and profile behaviour before expanding the shopping bag, checkout and order journey.
+- **Phases 1–4:** Complete and field-tested.
+- **Phase 5: Customer Accounts and Profiles:** Core functionality is implemented. Profile save/reload works, but the remaining privacy, session and password-recovery checks are still outstanding.
+- **Phase 6: Shopping Bag:** Implemented functionality is present, but the full cart test checklist is not yet signed off.
+- **Phase 7: Checkout and Order Submission:** Database preparation and the relevant RLS policy review are complete. The frontend checkout implementation still needs to be inspected and tested end to end.
+- **Current development focus:** Verify the existing checkout implementation, then run one controlled test order and confirm that the correct records are created in `orders` and `order_items`.
 
-The deployed storefront, category pages and Product Quick-View are the stable baseline. Back up working files before making further changes.
+The deployed storefront, category pages and Product Quick-View remain the stable baseline. Do not repeat checks already recorded as complete. Back up working files before making further changes.
 
 ## Completed development phases
 
@@ -121,26 +123,60 @@ The table also retains its existing `id`, `created_at` and `updated_at` columns.
 
 **Phase 5 is not complete until the outstanding security and functional tests pass.**
 
-### Phase 6: Shopping Bag and Order Journey — Planned
+### Phase 6: Shopping Bag and Order Journey — In progress
 
-Review and improve the customer shopping journey before introducing payment or fulfilment automation. Scope to be confirmed. Potential work:
+The shopping bag and Add to Bag journey have been implemented in the storefront. The phase is not signed off until the following behaviours have been tested on the live site:
 
-- Clear bag/cart view with selected items.
-- Quantity and item removal controls where appropriate.
-- Stock checks to prevent unavailable items being ordered.
-- Clear order summary and subtotal.
-- Customer enquiry/order hand-off retaining selected product references.
-- Collection and delivery choices, including PUDO and PAXI, with courier charges confirmed separately.
+- [ ] Add products from the category listing and Product Quick-View.
+- [ ] Remove an item from the bag.
+- [ ] Change quantity, if quantity controls are supported by the current implementation.
+- [ ] Confirm the bag total and subtotal recalculate correctly.
+- [ ] Confirm unavailable products cannot proceed to checkout.
+- [ ] Confirm one-of-one products cannot be duplicated or ordered more than once.
+- [ ] Confirm the bag behaves correctly after a page refresh.
+- [ ] Confirm the bag behaves correctly for signed-in and signed-out customers.
+- [ ] Confirm the selected product references and item details are passed correctly into checkout.
 
-### Phase 7: Checkout, Orders and Payments — Planned
+Do not assume a cart behaviour is complete merely because its control is visible. Record each live test result before marking it complete.
 
-- Customer checkout and order capture.
-- Order creation and order-item records.
-- Order management in the seller dashboard.
-- Invoice generation.
-- Payment workflow and secure payment verification.
-- Order fulfilment and customer updates.
-- Customer order history and order-status visibility.
+### Phase 7: Checkout, Orders and Payments — In progress
+
+#### Database preparation and review — Complete
+
+The original shop/seller Supabase project was inspected. The following database structure and security items have been checked:
+
+- [x] `orders` table structure inspected.
+- [x] `order_items` table structure inspected.
+- [x] `orders` has three reviewed RLS policies: admin management, customer order creation and customer reading of their own orders.
+- [x] `order_items` has three reviewed RLS policies: admin management, customer insertion of items belonging to their own order and customer reading of their own order items.
+- [x] Customer order policies scope access using the authenticated customer's `customer_id`.
+- [x] Admin policies use the `is_admin()` check.
+- [x] `order_items.order_id` references `orders.id` with ON DELETE CASCADE.
+- [x] `order_items.product_id` references `products.id` with ON DELETE SET NULL.
+- [x] `products.category_id` references `categories.id` with ON DELETE SET NULL.
+- [x] `product_images.product_id` references `products.id` with ON DELETE CASCADE.
+- [x] Data API exposure reviewed: `categories`, `order_items`, `orders`, `product_images` and `products` are exposed. `profiles` remains unexposed.
+- [x] Existing test products `HS-00001` and `HS-00002` inspected.
+- [x] A stored product image URL was opened and verified to load.
+
+These checks confirm the schema, configured policies and relationships were reviewed. They do **not** prove that a live customer order can be submitted successfully. The order tables were empty during the inspection; no successful end-to-end order submission has yet been recorded.
+
+#### Next checkout and order-submission work
+
+- [ ] Inspect the current checkout code and confirm which fields it collects.
+- [ ] Confirm collection and delivery choices and how PUDO/PAXI are represented.
+- [ ] Confirm delivery fee, subtotal and total calculations.
+- [ ] Confirm customer details are loaded or validated correctly.
+- [ ] Confirm checkout validates product availability and one-of-one stock.
+- [ ] Confirm the frontend creates one `orders` row and the corresponding `order_items` rows.
+- [ ] Run one controlled test order and inspect both tables for correct values and relationships.
+- [ ] Confirm errors are handled without creating incomplete or duplicate orders.
+- [ ] Confirm order creation works under the intended authenticated customer role, not only the Supabase SQL editor's `postgres` role.
+- [ ] Add seller dashboard order management after successful order creation is verified.
+- [ ] Add invoice generation, payment workflow and secure payment verification.
+- [ ] Add fulfilment updates, customer notifications and customer order history.
+
+Payment and fulfilment automation must remain out of scope until order creation is proven to work safely.
 
 #### Important one-of-one stock rules
 
