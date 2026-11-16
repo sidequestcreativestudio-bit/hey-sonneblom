@@ -195,6 +195,7 @@
       <p>Confirm your contact details and how you would like to receive your order.</p>
     </div>
     <form id="checkout-details-form" class="checkout-form">
+      <div id="checkout-details-step">
       <h3>Contact details</h3>
       <label>Full name
         <input id="checkout-full-name" name="full_name" type="text" autocomplete="name" maxlength="120" required>
@@ -223,15 +224,26 @@
         <textarea id="checkout-notes" name="customer_notes" rows="3" maxlength="500" placeholder="Any helpful information about your order"></textarea>
       </label>
 
-      <div class="checkout-summary">
-        <div><span>Clothing subtotal</span><strong id="checkout-subtotal">R0.00</strong></div>
-        <div><span>Delivery fee</span><strong id="checkout-delivery-fee">Calculated next</strong></div>
-        <p>We will calculate the courier charge from the shop's saved rates before an order is placed.</p>
-      </div>
-      <p class="checkout-stage-note" id="checkout-stage-note" role="status">This is the details step. Order submission and payment instructions will be added in the next stages.</p>
       <div class="checkout-actions">
         <button class="secondary-button" id="checkout-back-to-bag" type="button">Back to shopping bag</button>
+        <button class="primary-button" id="checkout-continue-summary" type="submit">Continue to order summary</button>
       </div>
+      </div>
+      <section id="checkout-summary-step" class="checkout-summary-step" hidden aria-labelledby="checkout-summary-title">
+        <h3 id="checkout-summary-title">Review your order 🌻</h3>
+        <div id="checkout-summary-items" class="checkout-summary-items"></div>
+        <div class="checkout-summary">
+          <div><span>Clothing subtotal</span><strong id="checkout-summary-subtotal">R0.00</strong></div>
+          <div><span>Delivery fee</span><strong id="checkout-summary-delivery">To be calculated</strong></div>
+          <div class="checkout-grand-total"><span>Estimated total</span><strong id="checkout-summary-total">To be confirmed</strong></div>
+          <p id="checkout-summary-delivery-note">Delivery pricing will be confirmed from the shop's saved courier rates before an order is placed.</p>
+        </div>
+        <p class="checkout-stage-note" role="status">Please review your details and order. Placing the order and payment instructions will be enabled in the next stage.</p>
+        <div class="checkout-actions">
+          <button class="secondary-button" id="checkout-edit-details" type="button">Back to details</button>
+          <button class="secondary-button" id="checkout-summary-back-to-bag" type="button">Back to shopping bag</button>
+        </div>
+      </section>
     </form>
   </section>
 </div>
@@ -246,6 +258,6 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
-  <script src="app.js?v=2"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>

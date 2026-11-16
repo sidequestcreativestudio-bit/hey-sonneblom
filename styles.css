@@ -183,3 +183,15 @@ body.quick-view-open{overflow:hidden}
   .cart-panel{width:100%;padding:23px 18px}
   .cart-heading h2{font-size:29px}
 }
+
+
+/* Phase 7, Step 2: order review stage */
+.checkout-summary-step h3{font:600 22px 'Playfair Display';color:var(--green);margin:8px 0 16px}
+.checkout-summary-items{display:grid;gap:0;margin-bottom:12px}
+.checkout-summary-item{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px}
+.checkout-summary-item span{overflow-wrap:anywhere}
+.checkout-summary-item strong{white-space:nowrap;color:var(--green)}
+.checkout-grand-total{padding-top:10px;border-top:1px solid #d8cfb8;font-weight:700}
+.checkout-grand-total span{font-weight:700}
+.checkout-summary-step .checkout-actions{margin-top:18px}
+.checkout-summary-step .checkout-actions button{flex:1}

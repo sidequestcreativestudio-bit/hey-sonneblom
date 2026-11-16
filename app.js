@@ -773,6 +773,8 @@ const checkoutForm = document.getElementById('checkout-details-form');
 const checkoutFulfilment = document.getElementById('checkout-fulfilment');
 const checkoutDestinationGroup = document.getElementById('checkout-destination-group');
 const checkoutDestinationLabel = document.getElementById('checkout-destination-label');
+const checkoutDetailsStep = document.getElementById('checkout-details-step');
+const checkoutSummaryStep = document.getElementById('checkout-summary-step');
 
 function updateCheckoutDestination() {
   if (!checkoutFulfilment || !checkoutDestinationGroup) return;
@@ -805,10 +807,12 @@ function openCheckout() {
   document.getElementById('checkout-email').value = currentCustomerUser.email || '';
   document.getElementById('checkout-phone').value = profile?.elements.phone.value || currentCustomerUser.user_metadata?.phone || '';
   document.getElementById('checkout-subtotal').textContent = money(cart.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0));
-  document.getElementById('checkout-delivery-fee').textContent = 'Calculated next';
+
   checkoutForm?.elements.destination_details && (checkoutForm.elements.destination_details.value = '');
   checkoutForm?.elements.customer_notes && (checkoutForm.elements.customer_notes.value = '');
   updateCheckoutDestination();
+  if (checkoutDetailsStep) checkoutDetailsStep.hidden = false;
+  if (checkoutSummaryStep) checkoutSummaryStep.hidden = true;
   closeShoppingBag();
   checkoutOverlay?.classList.add('is-open');
   checkoutOverlay?.setAttribute('aria-hidden', 'false');
@@ -822,7 +826,64 @@ function closeCheckout() {
 }
 
 document.getElementById('cart-checkout')?.addEventListener('click', openCheckout);
-checkoutForm?.addEventListener('submit', event => event.preventDefault());
+function renderCheckoutOrderSummary() {
+  const itemsContainer = document.getElementById('checkout-summary-items');
+  if (!itemsContainer) return;
+
+  itemsContainer.replaceChildren();
+  cart.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'checkout-summary-item';
+    const description = document.createElement('span');
+    description.textContent = `${item.name || 'Selected item'}${item.size ? ` · Size ${item.size}` : ''}`;
+    const price = document.createElement('strong');
+    price.textContent = money((Number(item.price) || 0) * (Number(item.quantity) || 1));
+    row.append(description, price);
+    itemsContainer.append(row);
+  });
+
+  const subtotal = cart.reduce((sum, item) =>
+    sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0);
+  document.getElementById('checkout-summary-subtotal').textContent = money(subtotal);
+  document.getElementById('checkout-summary-delivery').textContent =
+    checkoutFulfilment?.value === 'collection' ? money(0) : 'To be calculated';
+  document.getElementById('checkout-summary-total').textContent =
+    checkoutFulfilment?.value === 'collection' ? money(subtotal) : 'To be confirmed';
+
+  const deliveryNote = document.getElementById('checkout-summary-delivery-note');
+  if (deliveryNote) {
+    deliveryNote.textContent = checkoutFulfilment?.value === 'collection'
+      ? 'Local collection has no courier delivery fee.'
+      : 'The courier charge still needs to be connected to the saved courier rates. No delivery amount has been assumed.';
+  }
+}
+
+checkoutForm?.addEventListener('submit', event => {
+  event.preventDefault();
+  if (!checkoutForm.reportValidity()) return;
+  renderCheckoutOrderSummary();
+  if (checkoutDetailsStep) checkoutDetailsStep.hidden = true;
+  if (checkoutSummaryStep) checkoutSummaryStep.hidden = false;
+  checkoutSummaryStep?.scrollIntoView({ block: 'start' });
+});
+
+document.getElementById('checkout-edit-details')?.addEventListener('click', () => {
+  if (checkoutSummaryStep) checkoutSummaryStep.hidden = true;
+  if (checkoutDetailsStep) checkoutDetailsStep.hidden = false;
+  checkoutPanelScrollTop();
+});
+
+function checkoutPanelScrollTop() {
+  checkoutOverlay?.querySelector('.checkout-panel')?.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.getElementById('checkout-summary-back-to-bag')?.addEventListener('click', () => {
+  closeCheckout();
+  renderShoppingBag();
+  cartOverlay?.classList.add('is-open');
+  cartOverlay?.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+});
 checkoutFulfilment?.addEventListener('change', updateCheckoutDestination);
 document.getElementById('checkout-close')?.addEventListener('click', closeCheckout);
 document.getElementById('checkout-back-to-bag')?.addEventListener('click', () => {
