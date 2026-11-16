@@ -2,6 +2,7 @@ const toast = document.getElementById('toast');
 let toastTimer;
 let supabaseClient = null;
 let customerSupabaseClient = null;
+let currentCustomerUser = null;
 const CART_STORAGE_KEY = 'heySonneblomCart';
 
 let cart = [];
@@ -16,6 +17,13 @@ try {
 
 function saveCart() {
   localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+}
+
+function clearShoppingBag() {
+  cart = [];
+  saveCart();
+  updateCartCount();
+  renderShoppingBag();
 }
 
 function updateCartCount() {
@@ -89,6 +97,17 @@ function initSupabase() {
 }
 
 function addProductToBag(product) {
+  if (!currentCustomerUser) {
+    const accountButton = document.getElementById('account-open');
+    accountButton?.click();
+
+    const registerButton = document.querySelector('[data-customer-mode="register"]');
+    registerButton?.click();
+
+    showToast('Please create an account or sign in before adding items to your bag. 🌻');
+    return;
+  }
+
   const alreadyAdded = cart.some(item => item.id === product.id);
 
   if (alreadyAdded) {
@@ -409,7 +428,6 @@ const passwordResetForm = document.getElementById('customer-password-reset-form'
 const passwordResetSubmit = document.getElementById('customer-password-reset-submit');
 const passwordResetMessage = document.getElementById('customer-password-reset-message');
 
-let currentCustomerUser = null;
 let mode = 'register';
 
   function setMode(nextMode) {
@@ -544,6 +562,13 @@ function renderCustomerSession(session) {
   const signedIn = !!session;
 
   currentCustomerUser = session?.user || null;
+
+  if (!signedIn) {
+    clearShoppingBag();
+    const cartOverlay = document.getElementById('cart-overlay');
+    cartOverlay?.classList.remove('is-open');
+    cartOverlay?.setAttribute('aria-hidden', 'true');
+  }
 
   document.getElementById('customer-signed-out').hidden = signedIn;
   document.getElementById('customer-signed-in').hidden = !signedIn;
