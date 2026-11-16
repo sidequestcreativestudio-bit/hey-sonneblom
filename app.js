@@ -767,6 +767,78 @@ document.getElementById('cart-close')?.addEventListener('click', closeShoppingBa
 
 document.getElementById('cart-continue-shopping')?.addEventListener('click', closeShoppingBag);
 
+// Phase 7, Step 1: open and prefill the checkout details interface.
+const checkoutOverlay = document.getElementById('checkout-overlay');
+const checkoutForm = document.getElementById('checkout-details-form');
+const checkoutFulfilment = document.getElementById('checkout-fulfilment');
+const checkoutDestinationGroup = document.getElementById('checkout-destination-group');
+const checkoutDestinationLabel = document.getElementById('checkout-destination-label');
+
+function updateCheckoutDestination() {
+  if (!checkoutFulfilment || !checkoutDestinationGroup) return;
+  const option = checkoutFulfilment.value;
+  const needsDestination = option === 'pudo' || option === 'paxi';
+  checkoutDestinationGroup.hidden = !needsDestination;
+  const destination = document.getElementById('checkout-destination');
+  if (destination) destination.required = needsDestination;
+  if (checkoutDestinationLabel) {
+    checkoutDestinationLabel.firstChild.textContent = option === 'pudo'
+      ? 'Preferred PUDO locker / point details'
+      : 'Preferred PAXI point details';
+  }
+}
+
+function openCheckout() {
+  if (!cart.length) {
+    showToast('Your shopping bag is empty. Add an item before checkout.');
+    return;
+  }
+  if (!currentCustomerUser) {
+    closeShoppingBag();
+    document.getElementById('account-open')?.click();
+    showToast('Please sign in before continuing to checkout.');
+    return;
+  }
+
+  const profile = document.getElementById('customer-profile-form');
+  document.getElementById('checkout-full-name').value = profile?.elements.full_name.value || currentCustomerUser.user_metadata?.full_name || '';
+  document.getElementById('checkout-email').value = currentCustomerUser.email || '';
+  document.getElementById('checkout-phone').value = profile?.elements.phone.value || currentCustomerUser.user_metadata?.phone || '';
+  document.getElementById('checkout-subtotal').textContent = money(cart.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0));
+  document.getElementById('checkout-delivery-fee').textContent = 'Calculated next';
+  checkoutForm?.elements.destination_details && (checkoutForm.elements.destination_details.value = '');
+  checkoutForm?.elements.customer_notes && (checkoutForm.elements.customer_notes.value = '');
+  updateCheckoutDestination();
+  closeShoppingBag();
+  checkoutOverlay?.classList.add('is-open');
+  checkoutOverlay?.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCheckout() {
+  checkoutOverlay?.classList.remove('is-open');
+  checkoutOverlay?.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('cart-checkout')?.addEventListener('click', openCheckout);
+checkoutForm?.addEventListener('submit', event => event.preventDefault());
+checkoutFulfilment?.addEventListener('change', updateCheckoutDestination);
+document.getElementById('checkout-close')?.addEventListener('click', closeCheckout);
+document.getElementById('checkout-back-to-bag')?.addEventListener('click', () => {
+  closeCheckout();
+  renderShoppingBag();
+  cartOverlay?.classList.add('is-open');
+  cartOverlay?.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+});
+checkoutOverlay?.addEventListener('click', event => {
+  if (event.target === checkoutOverlay) closeCheckout();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && checkoutOverlay?.classList.contains('is-open')) closeCheckout();
+});
+
 cartOverlay?.addEventListener('click', (event) => {
   if (event.target === cartOverlay) {
     closeShoppingBag();

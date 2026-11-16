@@ -99,81 +99,26 @@ body.quick-view-open{overflow:hidden}
  .quick-view-meta>div{grid-template-columns:112px 1fr}
 }
 
-/* Phase 6.2: Shopping Bag Panel */
-.cart-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
-  display: none;
-  align-items: center;
-  justify-content: flex-end;
-  background: rgba(35, 30, 20, 0.55);
-  padding: 20px;
-}
 
-.cart-overlay.is-open {
-  display: flex;
-}
 
-.cart-panel {
-  position: relative;
-  width: min(100%, 480px);
-  max-height: 90vh;
-  overflow-y: auto;
-  background: #fffdf5;
-  border-radius: 12px;
-  padding: 32px;
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
-}
-
-.cart-close {
-  position: absolute;
-  top: 14px;
-  right: 16px;
-  border: 0;
-  background: transparent;
-  font-size: 28px;
-  cursor: pointer;
-}
-
-.cart-heading h2 {
-  margin: 10px 0;
-  font-family: 'Playfair Display', serif;
-}
-
-.cart-items {
-  margin: 25px 0;
-}
-
-.cart-subtotal {
-  display: flex;
-  justify-content: space-between;
-  padding: 18px 0;
-  border-top: 1px solid #e5dcc5;
-  font-size: 18px;
-}
-
-.cart-summary > p {
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-.cart-summary button {
-  width: 100%;
-  margin-top: 12px;
-}
-
-@media (max-width: 600px) {
-  .cart-overlay {
-    padding: 10px;
-    align-items: flex-end;
-  }
-
-  .cart-panel {
-    width: 100%;
-    max-height: 90vh;
-    padding: 26px 20px;
-  }
-}
-
+/* Phase 7: Checkout details interface */
+.checkout-overlay{position:fixed;inset:0;z-index:1100;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(35,39,31,.52);backdrop-filter:blur(3px)}
+.checkout-overlay.is-open{display:flex}
+.checkout-panel{position:relative;width:min(100%,620px);max-height:min(92vh,900px);overflow:auto;padding:clamp(22px,4vw,36px);background:var(--cream);border:1px solid var(--line);border-radius:12px;box-shadow:0 24px 80px rgba(0,0,0,.22)}
+.checkout-close{position:absolute;top:14px;right:16px;width:36px;height:36px;border:0;border-radius:50%;background:var(--pale);color:var(--green);font-size:25px;cursor:pointer}
+.checkout-panel .cart-heading{padding-right:35px;margin-bottom:24px}
+.checkout-panel .cart-heading h2{font:700 34px 'Playfair Display';margin:9px 0}
+.checkout-panel .cart-heading p{color:var(--muted);font-size:13px;line-height:1.6}
+.checkout-form{display:grid;gap:14px}
+.checkout-form h3{font:600 20px 'Playfair Display';margin:12px 0 0;color:var(--green)}
+.checkout-form label{display:grid;gap:7px;color:var(--ink);font-size:12px;font-weight:600}
+.checkout-form input,.checkout-form select,.checkout-form textarea{width:100%;padding:12px 13px;border:1px solid #d8d1bd;border-radius:7px;background:#fff;color:var(--ink);font:13px 'DM Sans';box-sizing:border-box}
+.checkout-form textarea{resize:vertical;min-height:78px}
+.checkout-form input:focus,.checkout-form select:focus,.checkout-form textarea:focus{outline:2px solid var(--yellow);outline-offset:1px}
+.checkout-summary{display:grid;gap:11px;margin-top:8px;padding:17px;background:#f3eddd;border:1px solid var(--line);border-radius:7px}
+.checkout-summary>div{display:flex;justify-content:space-between;gap:15px;font-size:13px}
+.checkout-summary strong{color:var(--green)}
+.checkout-summary p,.checkout-stage-note{font-size:11px;line-height:1.6;color:var(--muted);margin:0}
+.checkout-stage-note{padding:12px;background:#fff8e5;border-left:3px solid var(--yellow)}
+.checkout-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+@media(max-width:520px){.checkout-overlay{padding:10px}.checkout-panel{padding:24px 17px}.checkout-panel .cart-heading h2{font-size:29px}.checkout-actions button{width:100%}}
