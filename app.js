@@ -25,6 +25,46 @@ function updateCartCount() {
   }
 }
 
+function renderShoppingBag() {
+  const itemsContainer = document.getElementById('cart-items');
+  const subtotalElement = document.getElementById('cart-subtotal');
+  const countElement = document.getElementById('cart-item-count');
+  if (!itemsContainer || !subtotalElement || !countElement) return;
+
+  if (!cart.length) {
+    itemsContainer.innerHTML = '<p>Your bag is empty for now.</p>';
+    subtotalElement.textContent = money(0);
+    countElement.textContent = '0 items';
+    return;
+  }
+
+  itemsContainer.innerHTML = cart.map((item, index) => `
+    <div class="cart-item">
+      <div class="cart-item-details">
+        <strong>${item.name || 'Selected item'}</strong>
+        <p>${item.brand || ''} · Size ${item.size || ''}</p>
+        <span>${money(Number(item.price) || 0)}</span>
+        <p>Quantity: ${Number(item.quantity) || 1}</p>
+        <button class="cart-remove-button" type="button"
+          data-remove-cart-item="${index}"
+          aria-label="Remove ${item.name || 'item'} from bag"
+          style="margin-top:8px;padding:7px 11px;border:1px solid #a87517;border-radius:4px;background:#fffaf0;color:#704f12;cursor:pointer;font:600 11px 'DM Sans';"
+        >Remove</button>
+      </div>
+    </div>
+  `).join('');
+
+  const total = cart.reduce(
+    (sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0
+  );
+  subtotalElement.textContent = money(total);
+
+  const itemCount = cart.reduce(
+    (sum, item) => sum + (Number(item.quantity) || 1), 0
+  );
+  countElement.textContent = `${itemCount} item${itemCount === 1 ? '' : 's'}`;
+}
+
 function showToast(message) {
   if (!toast) return;
   toast.textContent = message;
@@ -669,49 +709,27 @@ function initShop() {
 
   
 document.getElementById('cart-open')?.addEventListener('click', () => {
+  renderShoppingBag();
+
   const overlay = document.getElementById('cart-overlay');
-  const itemsContainer = document.getElementById('cart-items');
-  const subtotalElement = document.getElementById('cart-subtotal');
-  const countElement = document.getElementById('cart-item-count');
-
-  const savedCart = JSON.parse(localStorage.getItem('heySonneblomCart') || '[]');
-
-  if (!savedCart.length) {
-    itemsContainer.innerHTML = '<p>Your bag is empty for now.</p>';
-    subtotalElement.textContent = money(0);
-    countElement.textContent = '0 items';
-  } else {
-    itemsContainer.innerHTML = savedCart.map((item, index) => `
-      <div class="cart-item">
-        <div class="cart-item-details">
-          <strong>${item.name}</strong>
-          <p>${item.brand || ''} · Size ${item.size || ''}</p>
-          <span>${money(Number(item.price) || 0)}</span>
-          <p>Quantity: ${Number(item.quantity) || 1}</p>
-        </div>
-      </div>
-    `).join('');
-
-    const total = savedCart.reduce(
-      (sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1),
-      0
-    );
-
-    subtotalElement.textContent = money(total);
-
-    const itemCount = savedCart.reduce(
-      (sum, item) => sum + (Number(item.quantity) || 1),
-      0
-    );
-
-    countElement.textContent = `${itemCount} item${itemCount === 1 ? '' : 's'}`;
-  }
-
-  overlay.classList.add('is-open');
-  overlay.setAttribute('aria-hidden', 'false');
+  overlay?.classList.add('is-open');
+  overlay?.setAttribute('aria-hidden', 'false');
 });
 
-  
+document.getElementById('cart-items')?.addEventListener('click', (event) => {
+  const removeButton = event.target.closest('[data-remove-cart-item]');
+  if (!removeButton) return;
+
+  const itemIndex = Number(removeButton.dataset.removeCartItem);
+  if (!Number.isInteger(itemIndex) || itemIndex < 0 || itemIndex >= cart.length) return;
+
+  cart.splice(itemIndex, 1);
+  saveCart();
+  updateCartCount();
+  renderShoppingBag();
+});
+
+
 // Phase 6.2: Shopping Bag Close Controls
 const cartOverlay = document.getElementById('cart-overlay');
 
