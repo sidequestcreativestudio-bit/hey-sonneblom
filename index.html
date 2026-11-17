@@ -240,6 +240,24 @@
           <div id="pudo-size-guidance" class="pudo-size-guidance" role="status"></div>
           <p class="pudo-parcel-dimensions" id="pudo-parcel-dimensions"></p>
         </div>
+        <div id="paxi-parcel-options" class="pudo-parcel-options" hidden>
+          <label>PAXI delivery service
+            <select id="paxi-service" name="paxi_service" required>
+              <option value="">Choose a PAXI service</option>
+              <option value="store_to_store_7_9">Store-to-Store · 7–9 business days</option>
+              <option value="store_to_store_3_5">Store-to-Store · 3–5 business days</option>
+              <option value="store_to_home_3_5">Store-to-Home · 3–5 business days</option>
+            </select>
+          </label>
+          <label>PAXI parcel size
+            <select id="paxi-parcel-size" name="paxi_parcel_size" required>
+              <option value="STANDARD">Standard bag · max 45 cm × 37 cm · 5 kg</option>
+              <option value="LARGE">Large bag · max 64 cm × 51 cm · 10 kg</option>
+            </select>
+          </label>
+          <div id="paxi-size-guidance" class="pudo-size-guidance" role="status"></div>
+          <p class="pudo-parcel-dimensions" id="paxi-parcel-dimensions">Standard: maximum 45 cm wide × 37 cm high, up to 5 kg. Large: maximum 64 cm wide × 51 cm high, up to 10 kg. Choose the bag that safely fits your order.</p>
+        </div>
       </div>
       <label>Additional notes (optional)
         <textarea id="checkout-notes" name="customer_notes" rows="3" maxlength="500" placeholder="Any helpful information about your order"></textarea>

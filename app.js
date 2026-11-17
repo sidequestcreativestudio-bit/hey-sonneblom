@@ -788,6 +788,10 @@ const pudoParcelSize = document.getElementById('pudo-parcel-size');
 const pudoParcelOptions = document.getElementById('pudo-parcel-options');
 const pudoSizeGuidance = document.getElementById('pudo-size-guidance');
 const pudoParcelDimensions = document.getElementById('pudo-parcel-dimensions');
+const paxiParcelOptions = document.getElementById('paxi-parcel-options');
+const paxiService = document.getElementById('paxi-service');
+const paxiParcelSize = document.getElementById('paxi-parcel-size');
+const paxiSizeGuidance = document.getElementById('paxi-size-guidance');
 
 const PUDO_SIZE_DETAILS = {
   XS: { dimensions: '170 × 80 × 600 mm', description: 'Extra Small: a very slim parcel, a little bigger than a tissue box.' },
@@ -821,6 +825,34 @@ function updatePudoSizeGuidance() {
   pudoParcelDimensions.textContent = details
     ? `${details.description}${details.dimensions ? ` Locker dimensions: ${details.dimensions}.` : ''}`
     : '';
+}
+
+function getPaxiRecommendation() {
+  const count = cart.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
+  const containsShoes = cart.some(item =>
+    /shoe|sneaker|trainer|boot|heel|sandal|slipper/i.test(
+      `${item.name || ''} ${item.category || ''} ${item.product_type || ''}`
+    )
+  );
+  return containsShoes || count > 10
+    ? 'Large is recommended because your order contains shoes or more than 10 items. You can still change the parcel size if needed.'
+    : 'Standard is a good starting point for around five tops. If your clothing is bulky, you can choose Large instead.';
+}
+
+function updatePaxiSizeGuidance() {
+  if (paxiSizeGuidance) paxiSizeGuidance.textContent = getPaxiRecommendation();
+}
+
+function calculatePaxiDeliveryFee() {
+  if (!paxiService || !paxiParcelSize) return null;
+  const rate = activeCourierRates.find(row =>
+    String(row.courier).toUpperCase() === 'PAXI' &&
+    row.service_code === paxiService.value &&
+    String(row.parcel_size).toUpperCase() === paxiParcelSize.value &&
+    Number(row.base_cost) >= 0
+  );
+  if (!rate || courierHandlingBuffer === null) return null;
+  return Number(rate.base_cost) + courierHandlingBuffer;
 }
 
 async function loadCourierPricing() {
@@ -911,7 +943,17 @@ function updateCheckoutDeliverySummary() {
 
   delivery.textContent = 'To be calculated';
   total.textContent = 'To be confirmed';
-  note.textContent = 'PAXI pricing will be connected in the next courier step.';
+  const fee = calculatePaxiDeliveryFee();
+  if (fee === null) {
+    delivery.textContent = 'Choose service';
+    total.textContent = 'To be confirmed';
+    note.textContent = 'Choose a PAXI service and parcel size. The delivery fee will be taken from the shop’s saved tariff plus the handling buffer.';
+  } else {
+    delivery.textContent = money(fee);
+    total.textContent = money(subtotal + fee);
+    const serviceLabel = paxiService.options[paxiService.selectedIndex].text;
+    note.textContent = `PAXI ${serviceLabel}, ${paxiParcelSize.value === 'LARGE' ? 'Large' : 'Standard'} parcel. Includes the shop handling buffer.`;
+  }
 }
 
 function updateCheckoutDestination() {
@@ -922,7 +964,11 @@ function updateCheckoutDestination() {
   const destination = document.getElementById('checkout-destination');
   if (destination) destination.required = needsDestination;
   if (pudoParcelOptions) pudoParcelOptions.hidden = option !== 'pudo';
+  if (paxiParcelOptions) paxiParcelOptions.hidden = option !== 'paxi';
+  if (paxiService) paxiService.required = option === 'paxi';
+  if (paxiParcelSize) paxiParcelSize.required = option === 'paxi';
   if (option === 'pudo') updatePudoSizeGuidance();
+  if (option === 'paxi') updatePaxiSizeGuidance();
   if (checkoutDestinationLabel) {
     checkoutDestinationLabel.firstChild.textContent = option === 'pudo'
       ? 'Preferred PUDO locker / point details'
@@ -998,6 +1044,11 @@ checkoutFulfilment?.addEventListener('change', () => {
 pudoService?.addEventListener('change', updateCheckoutDeliverySummary);
 pudoParcelSize?.addEventListener('change', () => {
   updatePudoSizeGuidance();
+  updateCheckoutDeliverySummary();
+});
+paxiService?.addEventListener('change', updateCheckoutDeliverySummary);
+paxiParcelSize?.addEventListener('change', () => {
+  updatePaxiSizeGuidance();
   updateCheckoutDeliverySummary();
 });
 

@@ -222,3 +222,6 @@ body.quick-view-open{overflow:hidden}
   font-size:11px;
   line-height:1.5;
 }
+
+/* PAXI checkout parcel options reuse the established courier panel styling. */
+#paxi-parcel-options select:invalid{border-color:#b78a36}
