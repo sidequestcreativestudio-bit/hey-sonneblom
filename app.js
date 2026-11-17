@@ -806,7 +806,7 @@ function openCheckout() {
   document.getElementById('checkout-full-name').value = profile?.elements.full_name.value || currentCustomerUser.user_metadata?.full_name || '';
   document.getElementById('checkout-email').value = currentCustomerUser.email || '';
   document.getElementById('checkout-phone').value = profile?.elements.phone.value || currentCustomerUser.user_metadata?.phone || '';
-  document.getElementById('checkout-subtotal').textContent = money(cart.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0));
+  document.getElementById('checkout-summary-subtotal').textContent = money(cart.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0));
 
   checkoutForm?.elements.destination_details && (checkoutForm.elements.destination_details.value = '');
   checkoutForm?.elements.customer_notes && (checkoutForm.elements.customer_notes.value = '');
