@@ -950,6 +950,8 @@ function openCheckout() {
 
   checkoutForm?.elements.destination_details && (checkoutForm.elements.destination_details.value = '');
   checkoutForm?.elements.customer_notes && (checkoutForm.elements.customer_notes.value = '');
+  // Courier pricing is only needed in the customer checkout, never during admin sign-in.
+  loadCourierPricing().then(updateCheckoutDeliverySummary);
   updateCheckoutDestination();
   if (checkoutDetailsStep) checkoutDetailsStep.hidden = false;
   if (checkoutSummaryStep) checkoutSummaryStep.hidden = true;
@@ -1282,7 +1284,6 @@ async function main() {
 
   try {
     initSupabase();
-loadCourierPricing();
 
     if (document.body.classList.contains('admin-page')) {
 
