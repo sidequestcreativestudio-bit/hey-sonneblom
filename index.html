@@ -219,6 +219,27 @@
         <label id="checkout-destination-label" for="checkout-destination">Preferred collection point / delivery details
           <textarea id="checkout-destination" name="destination_details" rows="3" maxlength="500" placeholder="Enter your preferred point or relevant delivery details"></textarea>
         </label>
+        <div id="pudo-parcel-options" class="pudo-parcel-options" hidden>
+          <label>PUDO delivery service
+            <select id="pudo-service" name="pudo_service">
+              <option value="locker_to_locker">Locker-to-Locker</option>
+              <option value="locker_to_kiosk">Locker-to-Kiosk</option>
+              <option value="locker_to_door">Locker-to-Door</option>
+              <option value="kiosk_to_door">Kiosk-to-Door</option>
+            </select>
+          </label>
+          <label>Parcel size
+            <select id="pudo-parcel-size" name="pudo_parcel_size">
+              <option value="XS">Extra Small (XS)</option>
+              <option value="S">Small (S)</option>
+              <option value="M">Medium (M)</option>
+              <option value="L">Large (L)</option>
+              <option value="XL">Extra Large (XL)</option>
+            </select>
+          </label>
+          <div id="pudo-size-guidance" class="pudo-size-guidance" role="status"></div>
+          <p class="pudo-parcel-dimensions" id="pudo-parcel-dimensions"></p>
+        </div>
       </div>
       <label>Additional notes (optional)
         <textarea id="checkout-notes" name="customer_notes" rows="3" maxlength="500" placeholder="Any helpful information about your order"></textarea>
@@ -258,6 +279,6 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
-  <script src="app.js?v=4"></script>
+  <script src="app.js?v=5"></script>
 </body>
 </html>

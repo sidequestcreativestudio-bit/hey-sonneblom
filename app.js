@@ -119,6 +119,8 @@ function addProductToBag(product) {
     id: product.id,
     name: product.name,
     brand: product.brand || '',
+    category: product.category || product.category_name || '',
+    product_type: product.product_type || product.type || '',
     size: product.size || '',
     price: Number(product.price),
     product_ref: product.product_ref,
@@ -776,6 +778,142 @@ const checkoutDestinationLabel = document.getElementById('checkout-destination-l
 const checkoutDetailsStep = document.getElementById('checkout-details-step');
 const checkoutSummaryStep = document.getElementById('checkout-summary-step');
 
+
+// PUDO parcel guidance and live tariff lookup. No database writes are performed.
+let activeCourierRates = [];
+let courierHandlingBuffer = null;
+
+const pudoService = document.getElementById('pudo-service');
+const pudoParcelSize = document.getElementById('pudo-parcel-size');
+const pudoParcelOptions = document.getElementById('pudo-parcel-options');
+const pudoSizeGuidance = document.getElementById('pudo-size-guidance');
+const pudoParcelDimensions = document.getElementById('pudo-parcel-dimensions');
+
+const PUDO_SIZE_DETAILS = {
+  XS: { dimensions: '170 × 80 × 600 mm', description: 'Extra Small: a very slim parcel, a little bigger than a tissue box.' },
+  S: { dimensions: '410 × 80 × 600 mm', description: 'Small: a good choice for around five tops.' },
+  M: { dimensions: '410 × 190 × 600 mm', description: 'Medium: better for shoes or larger clothing orders.' },
+  L: { dimensions: '', description: 'Large: for bulkier orders that need more room.' },
+  XL: { dimensions: '', description: 'Extra Large: for the largest orders.' }
+};
+
+function getPudoRecommendation() {
+  const count = cart.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
+  const containsShoes = cart.some(item =>
+    /shoe|sneaker|trainer|boot|heel|sandal|slipper/i.test(
+      `${item.name || ''} ${item.category || ''} ${item.product_type || ''}`
+    )
+  );
+
+  if (containsShoes || count > 10) return { size: 'M', reason: containsShoes
+    ? 'Your bag includes footwear, so we recommend Medium.'
+    : `Your bag has ${count} items, so we recommend Medium or larger.` };
+  if (count >= 1 && count <= 5) return { size: 'S', reason: `For ${count} item${count === 1 ? '' : 's'}, Small is our suggested starting size.` };
+  if (count >= 6 && count <= 10) return { size: 'M', reason: `For ${count} items, we recommend Medium for extra room.` };
+  return { size: 'M', reason: 'Medium is our suggested starting size. Choose a larger size if your parcel is bulky.' };
+}
+
+function updatePudoSizeGuidance() {
+  if (!pudoParcelSize || !pudoSizeGuidance || !pudoParcelDimensions) return;
+  const details = PUDO_SIZE_DETAILS[pudoParcelSize.value];
+  const recommendation = getPudoRecommendation();
+  pudoSizeGuidance.textContent = `${recommendation.reason} You can change the parcel size if needed.`;
+  pudoParcelDimensions.textContent = details
+    ? `${details.description}${details.dimensions ? ` Locker dimensions: ${details.dimensions}.` : ''}`
+    : '';
+}
+
+async function loadCourierPricing() {
+  if (!supabaseClient) return;
+  try {
+    const [ratesResult, settingsResult] = await Promise.all([
+      supabaseClient.from('courier_rates')
+        .select('courier, service_code, service_name, parcel_size, base_cost, is_active')
+        .eq('is_active', true),
+      supabaseClient.from('courier_settings').select('*')
+    ]);
+
+    if (ratesResult.error) throw ratesResult.error;
+    activeCourierRates = Array.isArray(ratesResult.data) ? ratesResult.data : [];
+
+    if (!settingsResult.error && Array.isArray(settingsResult.data)) {
+      for (const row of settingsResult.data) {
+        const entries = Object.entries(row || {});
+        for (const [key, value] of entries) {
+          if (/handling|buffer/i.test(key) && Number.isFinite(Number(value)) && value !== null && value !== '') {
+            courierHandlingBuffer = Number(value);
+            break;
+          }
+        }
+
+        // Also support key/value-style settings tables.
+        if (courierHandlingBuffer === null) {
+          const descriptor = entries.map(([key, value]) => `${key} ${value}`).join(' ').toLowerCase();
+          if (/handling.{0,20}buffer|buffer.{0,20}handling|handling fee/.test(descriptor)) {
+            const numericValue = entries
+              .filter(([key, value]) => !/id|created|updated|key|name|type/i.test(key))
+              .map(([, value]) => Number(value))
+              .find(value => Number.isFinite(value) && value >= 0);
+            if (numericValue !== undefined) courierHandlingBuffer = numericValue;
+          }
+        }
+        if (courierHandlingBuffer !== null) break;
+      }
+    }
+  } catch (error) {
+    console.error('Could not load courier pricing:', error);
+    activeCourierRates = [];
+    courierHandlingBuffer = null;
+  }
+}
+
+function calculatePudoDeliveryFee() {
+  if (!pudoService || !pudoParcelSize) return null;
+  const rate = activeCourierRates.find(row =>
+    String(row.courier).toUpperCase() === 'PUDO' &&
+    row.service_code === pudoService.value &&
+    String(row.parcel_size).toUpperCase() === pudoParcelSize.value &&
+    Number(row.base_cost) >= 0
+  );
+  if (!rate || courierHandlingBuffer === null) return null;
+  return Number(rate.base_cost) + courierHandlingBuffer;
+}
+
+function updateCheckoutDeliverySummary() {
+  const delivery = document.getElementById('checkout-summary-delivery');
+  const total = document.getElementById('checkout-summary-total');
+  const note = document.getElementById('checkout-summary-delivery-note');
+  if (!delivery || !total || !note) return;
+
+  const subtotal = cart.reduce((sum, item) =>
+    sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0);
+
+  if (checkoutFulfilment?.value === 'collection') {
+    delivery.textContent = money(0);
+    total.textContent = money(subtotal);
+    note.textContent = 'Local collection has no courier delivery fee.';
+    return;
+  }
+
+  if (checkoutFulfilment?.value === 'pudo') {
+    const fee = calculatePudoDeliveryFee();
+    if (fee === null) {
+      delivery.textContent = 'Rate unavailable';
+      total.textContent = 'To be confirmed';
+      note.textContent = 'We could not retrieve the selected PUDO tariff and handling buffer. Please try again later or contact the shop.';
+    } else {
+      delivery.textContent = money(fee);
+      total.textContent = money(subtotal + fee);
+      note.textContent = `PUDO ${pudoService.options[pudoService.selectedIndex].text}, size ${pudoParcelSize.value}. Includes the shop handling buffer.`;
+    }
+    return;
+  }
+
+  delivery.textContent = 'To be calculated';
+  total.textContent = 'To be confirmed';
+  note.textContent = 'PAXI pricing will be connected in the next courier step.';
+}
+
 function updateCheckoutDestination() {
   if (!checkoutFulfilment || !checkoutDestinationGroup) return;
   const option = checkoutFulfilment.value;
@@ -783,6 +921,8 @@ function updateCheckoutDestination() {
   checkoutDestinationGroup.hidden = !needsDestination;
   const destination = document.getElementById('checkout-destination');
   if (destination) destination.required = needsDestination;
+  if (pudoParcelOptions) pudoParcelOptions.hidden = option !== 'pudo';
+  if (option === 'pudo') updatePudoSizeGuidance();
   if (checkoutDestinationLabel) {
     checkoutDestinationLabel.firstChild.textContent = option === 'pudo'
       ? 'Preferred PUDO locker / point details'
@@ -845,18 +985,19 @@ function renderCheckoutOrderSummary() {
   const subtotal = cart.reduce((sum, item) =>
     sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0);
   document.getElementById('checkout-summary-subtotal').textContent = money(subtotal);
-  document.getElementById('checkout-summary-delivery').textContent =
-    checkoutFulfilment?.value === 'collection' ? money(0) : 'To be calculated';
-  document.getElementById('checkout-summary-total').textContent =
-    checkoutFulfilment?.value === 'collection' ? money(subtotal) : 'To be confirmed';
-
-  const deliveryNote = document.getElementById('checkout-summary-delivery-note');
-  if (deliveryNote) {
-    deliveryNote.textContent = checkoutFulfilment?.value === 'collection'
-      ? 'Local collection has no courier delivery fee.'
-      : 'The courier charge still needs to be connected to the saved courier rates. No delivery amount has been assumed.';
-  }
+  updateCheckoutDeliverySummary();
 }
+
+
+checkoutFulfilment?.addEventListener('change', () => {
+  updateCheckoutDestination();
+  updateCheckoutDeliverySummary();
+});
+pudoService?.addEventListener('change', updateCheckoutDeliverySummary);
+pudoParcelSize?.addEventListener('change', () => {
+  updatePudoSizeGuidance();
+  updateCheckoutDeliverySummary();
+});
 
 checkoutForm?.addEventListener('submit', event => {
   event.preventDefault();
@@ -1141,6 +1282,7 @@ async function main() {
 
   try {
     initSupabase();
+loadCourierPricing();
 
     if (document.body.classList.contains('admin-page')) {
 

@@ -195,3 +195,30 @@ body.quick-view-open{overflow:hidden}
 .checkout-grand-total span{font-weight:700}
 .checkout-summary-step .checkout-actions{margin-top:18px}
 .checkout-summary-step .checkout-actions button{flex:1}
+
+
+/* PUDO parcel-size guidance */
+.pudo-parcel-options{
+  display:grid;
+  gap:12px;
+  margin:12px 0 16px;
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:#f4efdf;
+}
+.pudo-parcel-options[hidden]{display:none}
+.pudo-size-guidance{
+  padding:10px 12px;
+  border-left:3px solid var(--gold);
+  background:#fff9e8;
+  color:var(--green);
+  font-size:12px;
+  line-height:1.55;
+}
+.pudo-parcel-dimensions{
+  margin:0;
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.5;
+}
