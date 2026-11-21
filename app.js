@@ -1061,6 +1061,107 @@ checkoutForm?.addEventListener('submit', event => {
   checkoutSummaryStep?.scrollIntoView({ block: 'start' });
 });
 
+
+async function submitCustomerOrder() {
+  const button = document.getElementById('checkout-place-order');
+  const message = document.getElementById('checkout-order-message');
+  const actions = document.getElementById('checkout-summary-actions');
+  if (!button || !message || !actions) return;
+
+  if (!customerSupabaseClient || !currentCustomerUser) {
+    message.textContent = 'Please sign in again before placing your order.';
+    message.classList.add('error');
+    return;
+  }
+  if (!cart.length) {
+    message.textContent = 'Your shopping bag is empty. Please add an item before placing an order.';
+    message.classList.add('error');
+    return;
+  }
+
+  const fulfilmentType = checkoutFulfilment?.value;
+  const destination = document.getElementById('checkout-destination')?.value.trim() || '';
+  const serviceCode = fulfilmentType === 'pudo'
+    ? pudoService?.value
+    : fulfilmentType === 'paxi' ? paxiService?.value : null;
+  const parcelSize = fulfilmentType === 'pudo'
+    ? pudoParcelSize?.value
+    : fulfilmentType === 'paxi' ? paxiParcelSize?.value : null;
+
+  if ((fulfilmentType === 'pudo' || fulfilmentType === 'paxi') && !destination) {
+    message.textContent = 'Please enter your delivery destination before placing your order.';
+    message.classList.add('error');
+    return;
+  }
+  if (fulfilmentType === 'pudo' && calculatePudoDeliveryFee() === null) {
+    message.textContent = 'The selected PUDO tariff is unavailable. Please review your delivery option.';
+    message.classList.add('error');
+    return;
+  }
+  if (fulfilmentType === 'paxi' && calculatePaxiDeliveryFee() === null) {
+    message.textContent = 'Please choose a valid PAXI service and parcel size.';
+    message.classList.add('error');
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = 'Placing order…';
+  message.classList.remove('error');
+  message.textContent = 'Securely submitting your order…';
+
+  try {
+    const { data: sessionData, error: sessionError } = await customerSupabaseClient.auth.getSession();
+    if (sessionError) throw sessionError;
+    const accessToken = sessionData?.session?.access_token;
+    if (!accessToken) throw new Error('Your session has expired. Please sign in again.');
+
+    const response = await fetch(
+      `${window.HEY_SONNEBLOM_SUPABASE_URL}/functions/v1/create-customer-order`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': window.HEY_SONNEBLOM_SUPABASE_KEY,
+          'Authorization': `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
+          fulfilment_type: fulfilmentType,
+          destination,
+          customer_notes: document.getElementById('checkout-notes')?.value.trim() || '',
+          courier_service_code: serviceCode,
+          parcel_size: parcelSize,
+          items: cart.map(item => ({
+            product_id: item.id,
+            quantity: Number(item.quantity) || 1
+          }))
+        })
+      }
+    );
+
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || 'We could not place your order. Please try again.');
+    }
+
+    const order = result.order || {};
+    const orderRef = order.order_ref || order.order?.order_ref || 'Order received';
+    clearShoppingBag();
+    message.classList.remove('error');
+    message.textContent = `${orderRef} has been placed successfully. Your selected garments are reserved for 48 hours. Please contact the shop for payment arrangements.`;
+    button.hidden = true;
+    document.getElementById('checkout-edit-details')?.setAttribute('hidden', '');
+    document.getElementById('checkout-summary-back-to-bag')?.setAttribute('hidden', '');
+  } catch (error) {
+    console.error('Customer order submission error:', error);
+    message.classList.add('error');
+    message.textContent = error.message || 'An unexpected error occurred while placing your order.';
+    button.disabled = false;
+    button.textContent = 'Try placing order again';
+  }
+}
+
+document.getElementById('checkout-place-order')?.addEventListener('click', submitCustomerOrder);
+
 document.getElementById('checkout-edit-details')?.addEventListener('click', () => {
   if (checkoutSummaryStep) checkoutSummaryStep.hidden = true;
   if (checkoutDetailsStep) checkoutDetailsStep.hidden = false;

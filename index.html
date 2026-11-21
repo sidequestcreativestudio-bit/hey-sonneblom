@@ -277,10 +277,11 @@
           <div class="checkout-grand-total"><span>Estimated total</span><strong id="checkout-summary-total">To be confirmed</strong></div>
           <p id="checkout-summary-delivery-note">Delivery pricing will be confirmed from the shop's saved courier rates before an order is placed.</p>
         </div>
-        <p class="checkout-stage-note" role="status">Please review your details and order. Placing the order and payment instructions will be enabled in the next stage.</p>
-        <div class="checkout-actions">
+        <p class="checkout-stage-note" id="checkout-order-message" role="status">Please review your details and order. When you place the order, the selected garments will be reserved for 48 hours while payment is arranged.</p>
+        <div class="checkout-actions" id="checkout-summary-actions">
           <button class="secondary-button" id="checkout-edit-details" type="button">Back to details</button>
           <button class="secondary-button" id="checkout-summary-back-to-bag" type="button">Back to shopping bag</button>
+          <button class="primary-button" id="checkout-place-order" type="button">Place order</button>
         </div>
       </section>
     </form>
