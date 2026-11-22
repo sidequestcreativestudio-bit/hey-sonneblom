@@ -4,22 +4,21 @@
 **Seller dashboard:** https://sidequestcreativestudio-bit.github.io/hey-sonneblom/admin.html  
 **Repository:** https://github.com/sidequestcreativestudio-bit/hey-sonneblom
 
-Hey Sonneblom is a South African preloved-clothing shop. The website lets customers browse available clothing by category, view product details, create customer accounts, save profile details, add garments to a shopping bag and proceed through checkout.
+Hey Sonneblom is a South African preloved-clothing shop. The website gives customers a simple way to browse available clothing by category, view product details, and add items to their shopping bag.
 
-The visual identity uses the approved Hey Sonneblom floral badge/logo and a warm boutique style: cream and ivory backgrounds, sunflower yellow, sage and deep green accents. Preserve the approved logo artwork and wording. Keep the established brand look consistent.
+The visual identity uses a warm boutique style with cream and ivory backgrounds, sunflower yellow, sage and deep green accents, and refined typography. Keep the established brand look consistent when making future changes.
 
 ---
 
-## Current project status (updated 21 November 2026)
+## Current project status
 
-- **Phases 1–4: Website foundation, shop database/dashboard, categories and Product Quick-View — Complete and previously field-tested.**
-- **Phase 5: Customer Accounts and Profiles — Core functionality implemented and tested. Security, recovery and session checks remain.**
-- **Phase 6: Shopping Bag — Implemented and used in checkout. Full regression checklist still needs sign-off.**
-- **Phase 7: Checkout and Order Submission — Checkout UI, secure order backend and order-creation path have been built. Authentication, profile lookup, request validation, database function existence/security and function execution permissions were verified. The final Place Order button was added and displayed in the live checkout. The customer-to-shop foreign-key mismatch was identified and the incorrect `orders_customer_id_fkey` constraint was removed. Continue verifying the resulting order records, stock reservation and duplicate-submit behaviour before calling the full order workflow complete.**
-- **Invoice design — Approved visual direction. Invoice V3 draft is in `Invoice/Hey_Sonneblom_Invoice_Design_v3.pdf`. This is a design draft, not yet connected to automatic invoice generation or delivery.**
-- **Current development focus — Admin order management and fulfilment controls, followed by invoice generation and customer notifications.**
+- **Phases 1–4:** Complete and field-tested.
+- **Phase 5: Customer Accounts and Profiles:** Core functionality is implemented. Profile save/reload works, but the remaining privacy, session and password-recovery checks are still outstanding.
+- **Phase 6: Shopping Bag:** Implemented functionality is present, but the full cart test checklist is not yet signed off.
+- **Phase 7: Checkout and Order Submission:** Database preparation and the relevant RLS policy review are complete. The frontend checkout implementation still needs to be inspected and tested end to end.
+- **Current development focus:** Verify the existing checkout implementation, then run one controlled test order and confirm that the correct records are created in `orders` and `order_items`.
 
-The live storefront, category pages and Product Quick-View are the stable baseline. Back up working files before making changes. Do not replace newer files with older versions.
+The deployed storefront, category pages and Product Quick-View remain the stable baseline. Do not repeat checks already recorded as complete. Back up working files before making further changes.
 
 ## Completed development phases
 
@@ -29,11 +28,11 @@ The live storefront, category pages and Product Quick-View are the stable baseli
 - Initial storefront structure and visual identity created.
 - Supabase connected to the website.
 
-### Phase 2: Database and seller dashboard foundation — Complete
+### Phase 2: Database and seller dashboard — Complete
 
 - Supabase database tables and storage configured.
 - Row Level Security (RLS) enabled.
-- Seller sign-in and dashboard foundation established.
+- Seller sign-in and dashboard functionality established.
 - Product creation and image upload.
 - Product editing and deletion.
 - Product availability/status management.
@@ -76,7 +75,7 @@ The live storefront, category pages and Product Quick-View are the stable baseli
 
 ## Active development
 
-### Phase 5: Customer Accounts and Profiles — Core implemented; remaining checks open
+### Phase 5: Customer Accounts and Profiles — In progress
 
 Customer authentication uses a **separate customer Supabase project**. It must remain separate from the original shop/seller Supabase project.
 
@@ -93,8 +92,6 @@ Customer authentication uses a **separate customer Supabase project**. It must r
 - [x] Profile data saves successfully.
 - [x] Saved profile data remains available after sign-out and sign-in.
 - [x] Table privileges for the `authenticated` role were granted and verified for SELECT, INSERT and UPDATE.
-- [x] Edge Function customer-token verification passed.
-- [x] Edge Function customer profile lookup passed after correcting the customer project's service access configuration.
 
 #### Customer profile fields
 
@@ -126,11 +123,11 @@ The table also retains its existing `id`, `created_at` and `updated_at` columns.
 
 **Phase 5 is not complete until the outstanding security and functional tests pass.**
 
-### Phase 6: Shopping Bag — Implemented; full regression sign-off pending
+### Phase 6: Shopping Bag and Order Journey — In progress
 
-- [x] Shopping bag is connected to the Add to Bag journey.
-- [x] Bag contents were used to proceed through the checkout flow.
-- [ ] Add products from category listing and Product Quick-View.
+The shopping bag and Add to Bag journey have been implemented in the storefront. The phase is not signed off until the following behaviours have been tested on the live site:
+
+- [ ] Add products from the category listing and Product Quick-View.
 - [ ] Remove an item from the bag.
 - [ ] Change quantity, if quantity controls are supported by the current implementation.
 - [ ] Confirm the bag total and subtotal recalculate correctly.
@@ -138,125 +135,81 @@ The table also retains its existing `id`, `created_at` and `updated_at` columns.
 - [ ] Confirm one-of-one products cannot be duplicated or ordered more than once.
 - [ ] Confirm the bag behaves correctly after a page refresh.
 - [ ] Confirm the bag behaves correctly for signed-in and signed-out customers.
-- [ ] Confirm selected product references and item details are passed correctly into checkout.
-- [ ] Confirm the bag is cleared only after successful order creation.
+- [ ] Confirm the selected product references and item details are passed correctly into checkout.
 
 Do not assume a cart behaviour is complete merely because its control is visible. Record each live test result before marking it complete.
 
 ### Phase 7: Checkout, Orders and Payments — In progress
 
-#### Database and secure order backend — Implemented; end-to-end verification remains
+#### Database preparation and review — Complete
 
-- [x] `orders` and `order_items` structures inspected.
-- [x] Existing RLS policies reviewed.
-- [x] `reservation_expires_at` column added to `orders`.
-- [x] `public.create_customer_order(...)` database function created.
-- [x] Database function verified as `SECURITY DEFINER` and returning `jsonb`.
-- [x] Function execution permissions verified: `anon = false`, `authenticated = false`, `service_role = true`.
-- [x] Database function includes the 48-hour reservation expiry and server-side product/price and courier validation logic.
-- [x] `create-customer-order` Supabase Edge Function deployed in the main shop project.
-- [x] Edge Function secrets configured in the main shop project. Secret/service-role values must remain in Supabase secrets only.
-- [x] Customer authentication and customer profile lookup passed in the Edge Function.
-- [x] Empty-bag validation returned the expected response, confirming the request parsing and validation path.
-- [x] Final Place Order button added to the checkout summary and displayed in the live storefront.
-- [x] Incorrect `orders_customer_id_fkey` relationship to the main project's `auth.users` identified as incompatible with the separate customer-auth project and removed. The `customer_id` UUID column remains.
-- [ ] Verify the live successful order is present in `orders` and its line item(s) are present in `order_items`.
-- [ ] Verify the selected product changes from `available` to `reserved`.
-- [ ] Verify the order has a `reservation_expires_at` approximately 48 hours after creation.
-- [ ] Verify failed submissions do not create partial orders or reserve stock.
-- [ ] Verify repeated clicks/retries cannot create duplicate orders.
-- [ ] Verify the shopping bag clears only after a confirmed successful response.
-- [ ] Test collection, PUDO and PAXI separately, including server-side delivery fee calculations.
-- [ ] Confirm unpaid orders are safely cancelled and stock is released after 48 hours. The expiry timestamp exists; automatic expiry processing/cron is not yet implemented.
-- [ ] Add secure payment confirmation and ensure paid orders can never be released by expiry processing.
+The original shop/seller Supabase project was inspected. The following database structure and security items have been checked:
 
-#### Agreed one-of-one stock rules
+- [x] `orders` table structure inspected.
+- [x] `order_items` table structure inspected.
+- [x] `orders` has three reviewed RLS policies: admin management, customer order creation and customer reading of their own orders.
+- [x] `order_items` has three reviewed RLS policies: admin management, customer insertion of items belonging to their own order and customer reading of their own order items.
+- [x] Customer order policies scope access using the authenticated customer's `customer_id`.
+- [x] Admin policies use the `is_admin()` check.
+- [x] `order_items.order_id` references `orders.id` with ON DELETE CASCADE.
+- [x] `order_items.product_id` references `products.id` with ON DELETE SET NULL.
+- [x] `products.category_id` references `categories.id` with ON DELETE SET NULL.
+- [x] `product_images.product_id` references `products.id` with ON DELETE CASCADE.
+- [x] Data API exposure reviewed: `categories`, `order_items`, `orders`, `product_images` and `products` are exposed. `profiles` remains unexposed.
+- [x] Existing test products `HS-00001` and `HS-00002` inspected.
+- [x] A stored product image URL was opened and verified to load.
 
-Hey Sonneblom sells unique, one-of-a-kind clothing items. Preserve these rules:
+These checks confirm the schema, configured policies and relationships were reviewed. They do **not** prove that a live customer order can be submitted successfully. The order tables were empty during the inspection; no successful end-to-end order submission has yet been recorded.
+
+#### Next checkout and order-submission work
+
+- [ ] Inspect the current checkout code and confirm which fields it collects.
+- [ ] Confirm collection and delivery choices and how PUDO/PAXI are represented.
+- [ ] Confirm delivery fee, subtotal and total calculations.
+- [ ] Confirm customer details are loaded or validated correctly.
+- [ ] Confirm checkout validates product availability and one-of-one stock.
+- [ ] Confirm the frontend creates one `orders` row and the corresponding `order_items` rows.
+- [ ] Run one controlled test order and inspect both tables for correct values and relationships.
+- [ ] Confirm errors are handled without creating incomplete or duplicate orders.
+- [ ] Confirm order creation works under the intended authenticated customer role, not only the Supabase SQL editor's `postgres` role.
+- [ ] Add seller dashboard order management after successful order creation is verified.
+- [ ] Add invoice generation, payment workflow and secure payment verification.
+- [ ] Add fulfilment updates, customer notifications and customer order history.
+
+Payment and fulfilment automation must remain out of scope until order creation is proven to work safely.
+
+#### Important one-of-one stock rules
+
+Hey Sonneblom sells unique, one-of-a-kind clothing items. Preserve these agreed rules:
 
 1. Adding an item to a bag or wishlist does not reserve it.
 2. Placing an order reserves the item.
-3. The item remains visible with a SOLD label until payment is confirmed, if that is the approved storefront behaviour.
+3. The item remains visible with a SOLD label until payment is confirmed.
 4. Once paid, its status becomes `sold` and it is hidden from normal available-product listings.
 5. Prevent two customers from successfully reserving the same one-of-a-kind item.
-6. Never mark an order as paid solely because a customer returns to the website from a payment page. Payment must be verified and confirmed by Rachel.
 
-### Phase 8: Admin Order Management and Fulfilment — Next development focus
+Never mark an order as paid solely because a customer returns to the website from a payment page. Payment must be verified securely.
 
-The admin panel must be the control point for Rachel to manage orders from payment confirmation through dispatch or collection.
+### Phase 8: Seller/Admin Improvements — Planned
 
-#### Planned admin order controls
+- Add a discreet admin login entry in the agreed footer location.
+- Preserve the customer-facing storefront and avoid an obvious admin button for shoppers.
+- Provide Rachel with intended admin access through the existing seller/admin authentication system.
+- Implement and test admin session timeout/automatic logout.
+- Verify strict separation between customer and admin permissions and sessions.
+- Add order/customer management improvements as required by the order workflow.
 
-- [ ] Add an order list to the existing `admin.html` seller dashboard.
-- [ ] Display order reference, date, customer details, items, sizes, totals and fulfilment method.
-- [ ] Display payment status separately from fulfilment status.
-- [ ] Add a deliberate **Mark as Paid** action for Rachel after she verifies payment.
-- [ ] Record who/when confirmed payment where practical.
-- [ ] For local collection orders, provide **Ready for Collection** and **Completed** actions.
-- [ ] Show the collection address: 77 Algoa Rd, De Mist, Kariega, 6229.
-- [ ] For PUDO/PAXI orders, provide courier selection and tracking-number input.
-- [ ] Require a tracking number before allowing an order to be marked **Shipped**.
-- [ ] Save tracking details to the order record.
-- [ ] Provide a **Shipped** action and a **Completed** action.
-- [ ] Prevent irrelevant actions from appearing: collection orders should not require courier tracking; courier orders should not use the collection-ready action.
-- [ ] Add safe cancellation handling and stock-release rules.
-- [ ] Preserve existing product-management functionality and admin access controls.
+### Phase 9: Final Testing and Launch Readiness — Planned
 
-#### Agreed fulfilment workflow
-
-**All fulfilment is controlled from the admin panel.**
-
-1. Customer places an order; it begins as pending payment.
-2. Rachel checks the payment and selects **Mark as Paid**.
-3. The customer receives a payment/order confirmation email.
-4. For **PUDO/PAXI**, Rachel prepares the parcel, enters the courier tracking number and marks it **Shipped**. The customer receives the tracking details by email.
-5. For **local collection**, Rachel marks the order **Ready for Collection**. The customer receives the collection notification and address.
-6. Rachel marks the order **Completed** when the parcel has been collected or delivery is complete.
-
-### Phase 9: Invoice, Payment Proof and Customer Notifications — Design approved; automation pending
-
-#### Approved invoice design
-
-- [x] Hey Sonneblom floral badge/logo supplied and used in the invoice design.
-- [x] Invoice wording used instead of “Tax Invoice”.
-- [x] Business email included: `heysonneblomthrift@gmail.com`.
-- [x] Local collection address included: 77 Algoa Rd, De Mist, Kariega, 6229.
-- [x] Capitec EFT account details included in the invoice draft.
-- [x] Rachel's proof-of-payment WhatsApp number included: 069 991 7794.
-- [x] EFT and cash payment sections included in the design.
-- [x] 48-hour reservation notice included.
-- [x] Invoice V3 draft saved at `Invoice/Hey_Sonneblom_Invoice_Design_v3.pdf`.
-
-#### Still to build
-
-- [ ] Generate a unique invoice from each successful order, populated with actual customer, order, item, delivery and total data.
-- [ ] Store invoice number and generated PDF/reference against the order.
-- [ ] Email the PDF invoice to the customer.
-- [ ] Send the invoice to the customer by WhatsApp using an approved WhatsApp integration or provider. A phone number printed on an invoice does not itself send messages.
-- [ ] Send new-order notification to `heysonneblomthrift@gmail.com`.
-- [ ] Provide a customer proof-of-payment submission method.
-- [ ] Notify Rachel when proof of payment is submitted.
-- [ ] Keep payment status pending until Rachel verifies the funds and selects **Mark as Paid**.
-- [ ] When Rachel marks an order as paid, automatically email the customer a payment/order confirmation.
-- [ ] When a PUDO/PAXI order is marked shipped, email the courier and tracking number to the customer.
-- [ ] When a collection order is marked ready, email the customer the collection notification and address.
-- [ ] When an order is completed or cancelled, send the appropriate customer email.
-- [ ] Record notification delivery/failure status and prevent duplicate emails when an admin action is repeated.
-
-**Important:** Invoice V3 is an approved design draft only. Automatic PDF creation, email sending and WhatsApp sending have not yet been implemented.
-
-### Phase 10: Final Testing and Launch Readiness — Planned
-
-- [ ] Full desktop and mobile testing.
-- [ ] Customer registration, confirmation, sign-in and password-reset tests.
-- [ ] Customer profile privacy and ownership tests.
-- [ ] Shopping bag and stock-reservation tests.
-- [ ] Checkout and payment verification tests.
-- [ ] Order, invoice and fulfilment tests.
-- [ ] Email delivery and WhatsApp integration tests.
-- [ ] Seller/admin access and session tests.
-- [ ] Review database backups and recovery arrangements.
-- [ ] Confirm public frontend files contain only Supabase public/publishable keys.
+- Full desktop and mobile testing.
+- Customer registration, confirmation, sign-in and password-reset tests.
+- Customer profile privacy and ownership tests.
+- Shopping bag and stock-reservation tests.
+- Checkout and payment verification tests.
+- Order, invoice and fulfilment tests.
+- Seller/admin access and session tests.
+- Review database backups and recovery arrangements.
+- Confirm public frontend files contain only Supabase public/publishable keys.
 
 ---
 
@@ -266,13 +219,13 @@ The admin panel must be the control point for Rachel to manage orders from payme
 - CSS
 - JavaScript
 - GitHub Pages
-- Supabase (database, authentication, storage and Edge Functions)
+- Supabase (database, authentication and image storage)
 
 ## Supabase project structure
 
 The project uses **two separate Supabase projects**:
 
-1. **Original shop/seller project** — storefront product data, seller dashboard, orders, order items, courier rates and related shop functionality.
+1. **Original shop/seller project** — existing storefront product data, seller dashboard and related shop functionality.
 2. **Customer accounts project** — customer authentication and the `customer_profiles` table.
 
 Keep the projects separate. Do not replace the original shop configuration with the customer project configuration, or vice versa.
@@ -285,8 +238,6 @@ The original shop project uses these tables:
 - profiles
 - orders
 - order_items
-- courier_rates
-- courier_settings
 
 Original shop storage bucket:
 
@@ -298,30 +249,27 @@ The customer project includes:
 
 Keep RLS enabled on both projects and preserve appropriately scoped policies. Customer profile access must be restricted to the authenticated owner of each profile.
 
-## Security rules
+### Security rules
 
 - The website must use only Supabase public/publishable keys.
-- Never place a Supabase secret or service-role key in frontend files, GitHub, public repository code or downloadable website ZIPs.
-- Keep all service-role keys in Supabase Edge Function secrets.
+- Never place a Supabase secret or service-role key in frontend files, GitHub Pages or public repository code.
 - Never disable RLS as a shortcut to fix a database issue.
 - Table GRANT permissions do not replace RLS policies. Both required SQL privileges and correct ownership policies must be in place.
 - Do not expose customer addresses, contact details, orders or invoices to other customers.
 - Keep customer authentication separate from seller/admin access.
-- Order creation and payment-sensitive actions must be performed through appropriately secured server-side functions or policies.
 
 ## Main website files
 
 - `index.html` - storefront homepage and customer account/profile interface.
-- `app.js` - storefront behaviour, product loading, bag interactions, Quick-View, customer authentication/profile behaviour and checkout submission.
+- `app.js` - storefront behaviour, product loading, bag interactions, Quick-View, customer authentication/profile behaviour and seller dashboard logic.
 - `styles.css` - storefront, category, dashboard, Quick-View and account styling.
 - `supabase-config.js` - original shop Supabase URL and public client configuration.
 - Customer Supabase configuration - separate customer project URL and public client configuration, kept distinct from the original shop configuration.
-- `admin.html` - seller dashboard; order-management controls are the next planned addition.
+- `admin.html` - seller dashboard.
 - `tops-and-shirts.html` - Tops & Shirts collection.
 - `dresses.html` - Dresses collection.
 - `bottoms.html` - Bottoms collection.
 - `other-finds.html` - Other Finds collection.
-- `Invoice/Hey_Sonneblom_Invoice_Design_v3.pdf` - approved invoice design draft.
 
 Keep the four category pages and their `data-category` values aligned with the category slugs in Supabase.
 
@@ -364,12 +312,8 @@ After deployment, verify relevant features:
 - Customer registration, sign-in and sign-out work.
 - Customer profile saves and reloads.
 - Customer profile privacy is enforced.
-- Checkout and order submission work.
-- Order and product reservation records are correct.
-- Admin product-management actions remain functional.
-- Admin order-management actions are permission-protected.
-- Invoice and customer notifications work once implemented.
 - Desktop and mobile layouts remain usable.
+- Seller dashboard still loads and existing product-management actions remain functional.
 
 ## Project principle
 

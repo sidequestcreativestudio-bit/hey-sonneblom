@@ -225,3 +225,23 @@ body.quick-view-open{overflow:hidden}
 
 /* PAXI checkout parcel options reuse the established courier panel styling. */
 #paxi-parcel-options select:invalid{border-color:#b78a36}
+
+
+/* Phase 8, Step 1: read-only admin order overview */
+.admin-orders-section{margin:38px 0 48px}
+.admin-orders-section .section-heading{margin-bottom:18px}
+.admin-orders-section .section-heading p{max-width:700px}
+.admin-order-list{display:grid;gap:12px}
+.admin-order-card{background:#fff;border:1px solid var(--line);border-radius:5px;padding:18px;display:grid;gap:10px;min-width:0}
+.admin-order-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.admin-order-heading>strong{font:700 19px 'Playfair Display';overflow-wrap:anywhere}
+.admin-order-date,.admin-order-customer small,.admin-order-extra{font-size:11px;color:var(--muted)}
+.admin-order-customer{display:grid;gap:4px}
+.admin-order-customer>strong{font-size:13px}
+.admin-order-fulfilment{font-size:12px;margin:0;color:var(--green);font-weight:600;overflow-wrap:anywhere}
+.admin-order-items{margin:0;padding:12px 12px 12px 30px;background:#fffaf0;border-radius:4px;font-size:11px;line-height:1.8}
+.admin-order-totals{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;font-size:11px;color:var(--muted)}
+.admin-order-totals strong{font-size:14px;color:var(--ink)}
+.admin-order-extra{overflow-wrap:anywhere}
+.admin-orders-error{padding:15px;background:#fff2d9;border:1px solid #ead39d;color:#70531b;font-size:12px;line-height:1.6}
+@media(max-width:600px){.admin-order-card{padding:14px}.admin-order-heading{align-items:flex-start}.admin-order-heading>strong{font-size:16px}.admin-order-totals{display:grid;gap:6px}}

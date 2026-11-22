@@ -34,8 +34,16 @@
         <article class="stat-card"><span>Available items</span><strong id="count-available">0</strong><small>Ready for customers</small></article>
         <article class="stat-card"><span>Reserved items</span><strong id="count-reserved">0</strong><small>Awaiting confirmation</small></article>
         <article class="stat-card"><span>Sold items</span><strong id="count-sold">0</strong><small>Completed sales</small></article>
-        <article class="stat-card"><span>New orders</span><strong>—</strong><small>Order management comes next</small></article>
+        <article class="stat-card"><span>New orders</span><strong id="count-new-orders">0</strong><small>Awaiting admin review</small></article>
       </div>
+
+      <section class="admin-list-section admin-orders-section">
+        <div class="section-heading">
+          <div><span class="eyebrow">CUSTOMER ORDERS</span><h2>Orders</h2><p>Read-only order overview. Payment and fulfilment controls will be added after this list is tested.</p></div>
+          <button class="secondary-button" id="refresh-orders-button" type="button">Refresh orders</button>
+        </div>
+        <div id="admin-order-list" class="admin-order-list" aria-live="polite"><p class="loading-note">Loading orders…</p></div>
+      </section>
 
       <section class="admin-panel product-editor">
         <div class="editor-intro"><span class="eyebrow">PRODUCT MANAGEMENT</span><h2 id="form-heading">Add a product</h2><p>Product references are generated automatically by the database.</p></div>
@@ -67,6 +75,6 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
-  <script src="app.js?v=6"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>

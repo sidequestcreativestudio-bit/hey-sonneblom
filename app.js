@@ -1292,6 +1292,120 @@ async function loadAdminDashboard() {
   });
 }
 
+async function loadAdminOrders() {
+  const list = document.getElementById('admin-order-list');
+  const count = document.getElementById('count-new-orders');
+  if (!list) return;
+
+  list.replaceChildren();
+  const loading = document.createElement('p');
+  loading.className = 'loading-note';
+  loading.textContent = 'Loading orders…';
+  list.append(loading);
+
+  try {
+    const { data: orders, error } = await supabaseClient
+      .from('orders')
+      .select('id, order_ref, customer_name, customer_phone, customer_email, fulfilment_type, delivery_address, collection_point, delivery_fee, subtotal, total, status, tracking_number, customer_notes, created_at, reservation_expires_at, order_items(product_ref, product_name, size, unit_price, quantity)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const rows = orders || [];
+    if (count) count.textContent = rows.filter(order => order.status === 'pending').length;
+    list.replaceChildren();
+
+    if (!rows.length) {
+      const empty = document.createElement('p');
+      empty.className = 'empty-note';
+      empty.textContent = 'No customer orders have been placed yet.';
+      list.append(empty);
+      return;
+    }
+
+    rows.forEach(order => {
+      const card = document.createElement('article');
+      card.className = 'admin-order-card';
+
+      const heading = document.createElement('div');
+      heading.className = 'admin-order-heading';
+      const title = document.createElement('strong');
+      title.textContent = order.order_ref || `Order ${String(order.id).slice(0, 8)}`;
+      const status = document.createElement('span');
+      status.className = 'status-pill';
+      status.textContent = String(order.status || 'unknown').replaceAll('_', ' ');
+      heading.append(title, status);
+
+      const date = document.createElement('small');
+      date.className = 'admin-order-date';
+      date.textContent = order.created_at ? new Date(order.created_at).toLocaleString('en-ZA', { dateStyle: 'medium', timeStyle: 'short' }) : 'Date not available';
+
+      const customer = document.createElement('div');
+      customer.className = 'admin-order-customer';
+      const customerName = document.createElement('strong');
+      customerName.textContent = order.customer_name || 'Customer name not available';
+      const contact = document.createElement('small');
+      contact.textContent = [order.customer_phone, order.customer_email].filter(Boolean).join(' · ') || 'No contact details recorded';
+      customer.append(customerName, contact);
+
+      const fulfilment = document.createElement('p');
+      fulfilment.className = 'admin-order-fulfilment';
+      const method = String(order.fulfilment_type || 'not specified').toUpperCase();
+      const destination = order.fulfilment_type === 'collection'
+        ? (order.collection_point || 'Local collection')
+        : (order.delivery_address || order.collection_point || 'Delivery destination not recorded');
+      fulfilment.textContent = `${method} · ${destination}`;
+
+      const items = document.createElement('ul');
+      items.className = 'admin-order-items';
+      (order.order_items || []).forEach(item => {
+        const li = document.createElement('li');
+        const itemName = item.product_ref ? `${item.product_ref} · ${item.product_name || 'Item'}` : (item.product_name || 'Item');
+        li.textContent = `${itemName} · Size ${item.size || 'N/A'} · Qty ${item.quantity || 1} · ${money(item.unit_price || 0)}`;
+        items.append(li);
+      });
+      if (!order.order_items?.length) {
+        const li = document.createElement('li');
+        li.textContent = 'No order items returned';
+        items.append(li);
+      }
+
+      const totals = document.createElement('div');
+      totals.className = 'admin-order-totals';
+      const subtotal = document.createElement('span');
+      subtotal.textContent = `Subtotal: ${money(order.subtotal || 0)}`;
+      const delivery = document.createElement('span');
+      delivery.textContent = `Delivery: ${money(order.delivery_fee || 0)}`;
+      const total = document.createElement('strong');
+      total.textContent = `Total: ${money(order.total || 0)}`;
+      totals.append(subtotal, delivery, total);
+
+      card.append(heading, date, customer, fulfilment, items, totals);
+      if (order.tracking_number) {
+        const tracking = document.createElement('small');
+        tracking.className = 'admin-order-extra';
+        tracking.textContent = `Tracking: ${order.tracking_number}`;
+        card.append(tracking);
+      }
+      if (order.customer_notes) {
+        const notes = document.createElement('small');
+        notes.className = 'admin-order-extra';
+        notes.textContent = `Customer note: ${order.customer_notes}`;
+        card.append(notes);
+      }
+      list.append(card);
+    });
+  } catch (error) {
+    console.error('Could not load admin orders:', error);
+    list.replaceChildren();
+    const message = document.createElement('p');
+    message.className = 'admin-orders-error';
+    message.textContent = `Orders could not be loaded: ${error.message}. Check the orders and order_items admin read policies and the column names.`;
+    list.append(message);
+    if (count) count.textContent = '—';
+  }
+}
+
 function fillProductForm(product) {
   const form = document.getElementById('product-form');
 
@@ -1428,6 +1542,7 @@ async function initAdmin() {
 
   await loadCategories();
   await loadAdminDashboard();
+  await loadAdminOrders();
 }
 
 async function main() {
@@ -1453,6 +1568,8 @@ async function main() {
         if (error) return setAdminMessage(error.message, true);
         await initAdmin();
       });
+
+      document.getElementById('refresh-orders-button')?.addEventListener('click', loadAdminOrders);
 
       document.getElementById('logout-button')?.addEventListener('click', async () => {
         await supabaseClient.auth.signOut();
