@@ -17,6 +17,7 @@ The visual identity uses a warm boutique style with cream and ivory backgrounds,
 - **Phase 6: Shopping Bag:** Implemented functionality is present, but the full cart test checklist is not yet signed off.
 - **Phase 7: Checkout and Order Submission:** Database preparation and the relevant RLS policy review are complete. The frontend checkout implementation still needs to be inspected and tested end to end.
 - **Current development focus:** Verify the existing checkout implementation, then run one controlled test order and confirm that the correct records are created in `orders` and `order_items`.
+- **Admin presentation refresh:** Dashboard navigation and section layout are being tidied without database or order-workflow changes. This is a presentation improvement only and does not change the phase sequence.
 
 The deployed storefront, category pages and Product Quick-View remain the stable baseline. Do not repeat checks already recorded as complete. Back up working files before making further changes.
 

@@ -245,3 +245,28 @@ body.quick-view-open{overflow:hidden}
 .admin-order-extra{overflow-wrap:anywhere}
 .admin-orders-error{padding:15px;background:#fff2d9;border:1px solid #ead39d;color:#70531b;font-size:12px;line-height:1.6}
 @media(max-width:600px){.admin-order-card{padding:14px}.admin-order-heading{align-items:flex-start}.admin-order-heading>strong{font-size:16px}.admin-order-totals{display:grid;gap:6px}}
+
+/* Seller dashboard navigation refresh */
+.admin-navigation{display:flex;gap:8px;flex-wrap:wrap;margin:28px 0 24px;padding:8px;background:#f2ecd9;border:1px solid var(--line);border-radius:8px}
+.admin-nav-button{border:1px solid transparent;background:transparent;color:var(--green);padding:11px 17px;border-radius:5px;font:600 12px 'DM Sans',sans-serif;cursor:pointer;transition:background .18s ease,border-color .18s ease}
+.admin-nav-button:hover{background:#fffaf0}
+.admin-nav-button.active{background:#fff;border-color:#d9cda9;box-shadow:0 2px 8px rgba(49,58,34,.06);color:#243d20}
+.admin-tab-panel[hidden]{display:none!important}
+.admin-panel-heading{margin:8px 0 0}
+.admin-panel-heading h2{font:700 30px 'Playfair Display',serif;margin:7px 0}
+.admin-panel-heading p{color:var(--muted);font-size:13px;margin:0}
+.admin-tab-panel .stats-grid{margin:22px 0}
+.admin-quick-actions{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 16px}
+.admin-report-note{font-size:12px;line-height:1.65;color:var(--muted);padding:14px 16px;background:#fffdf6;border-left:3px solid #d8c477;max-width:760px}
+.reports-placeholder{margin-top:8px;min-height:190px}
+.reports-placeholder h2{font:700 30px 'Playfair Display',serif;margin:8px 0}
+.reports-placeholder p{max-width:650px;color:var(--muted);font-size:13px;line-height:1.7}
+.reports-icon{font-size:58px}
+@media(max-width:650px){
+ .admin-navigation{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+ .admin-nav-button{padding:12px 8px}
+ .admin-quick-actions{display:grid}
+ .admin-quick-actions button{width:100%}
+ .reports-placeholder{align-items:flex-start}
+ .reports-icon{font-size:38px}
+}

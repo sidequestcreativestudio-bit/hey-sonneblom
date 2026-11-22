@@ -30,14 +30,30 @@
         <div><span class="eyebrow">PRIVATE SELLER AREA</span><h1 id="admin-heading">Good day</h1><p id="admin-email"></p></div>
         <button class="secondary-button" id="logout-button" type="button">Sign out</button>
       </div>
-      <div class="stats-grid">
-        <article class="stat-card"><span>Available items</span><strong id="count-available">0</strong><small>Ready for customers</small></article>
-        <article class="stat-card"><span>Reserved items</span><strong id="count-reserved">0</strong><small>Awaiting confirmation</small></article>
-        <article class="stat-card"><span>Sold items</span><strong id="count-sold">0</strong><small>Completed sales</small></article>
-        <article class="stat-card"><span>New orders</span><strong id="count-new-orders">0</strong><small>Awaiting admin review</small></article>
-      </div>
+      <nav class="admin-navigation" aria-label="Seller dashboard sections">
+        <button class="admin-nav-button active" type="button" data-admin-tab="overview" aria-current="page">Dashboard</button>
+        <button class="admin-nav-button" type="button" data-admin-tab="orders">Orders</button>
+        <button class="admin-nav-button" type="button" data-admin-tab="stock">Stock management</button>
+        <button class="admin-nav-button" type="button" data-admin-tab="reports">Reports</button>
+      </nav>
 
-      <section class="admin-list-section admin-orders-section">
+      <section class="admin-tab-panel" data-admin-panel="overview">
+        <div class="admin-panel-heading"><div><span class="eyebrow">SHOP OVERVIEW</span><h2>Dashboard overview</h2><p>Your current shop activity at a glance.</p></div></div>
+        <div class="stats-grid">
+          <article class="stat-card"><span>Available items</span><strong id="count-available">0</strong><small>Ready for customers</small></article>
+          <article class="stat-card"><span>Reserved items</span><strong id="count-reserved">0</strong><small>Awaiting confirmation</small></article>
+          <article class="stat-card"><span>Sold items</span><strong id="count-sold">0</strong><small>Completed sales</small></article>
+          <article class="stat-card"><span>New orders</span><strong id="count-new-orders">0</strong><small>Awaiting admin review</small></article>
+        </div>
+        <div class="admin-quick-actions">
+          <button class="primary-button" type="button" data-open-admin-tab="stock">＋ Add new stock</button>
+          <button class="secondary-button" type="button" data-open-admin-tab="orders">View customer orders</button>
+        </div>
+        <p class="admin-report-note">Sales charts and website visitor statistics will be added after order and analytics tracking have been verified. No estimated figures are shown here.</p>
+      </section>
+
+      <section class="admin-tab-panel" data-admin-panel="orders" hidden>
+        <section class="admin-list-section admin-orders-section">
         <div class="section-heading">
           <div><span class="eyebrow">CUSTOMER ORDERS</span><h2>Orders</h2><p>Read-only order overview. Payment and fulfilment controls will be added after this list is tested.</p></div>
           <button class="secondary-button" id="refresh-orders-button" type="button">Refresh orders</button>
@@ -45,6 +61,9 @@
         <div id="admin-order-list" class="admin-order-list" aria-live="polite"><p class="loading-note">Loading orders…</p></div>
       </section>
 
+      </section>
+
+      <section class="admin-tab-panel" data-admin-panel="stock" hidden>
       <section class="admin-panel product-editor">
         <div class="editor-intro"><span class="eyebrow">PRODUCT MANAGEMENT</span><h2 id="form-heading">Add a product</h2><p>Product references are generated automatically by the database.</p></div>
         <form id="product-form" class="seller-form">
@@ -69,6 +88,14 @@
         <div class="section-heading"><div><span class="eyebrow">YOUR CATALOGUE</span><h2>Manage products</h2></div></div>
         <div id="admin-product-list" class="admin-product-list"><p>Loading products…</p></div>
       </section>
+      </section>
+
+      <section class="admin-tab-panel" data-admin-panel="reports" hidden>
+        <div class="admin-panel reports-placeholder">
+          <div><span class="eyebrow">SHOP INSIGHTS</span><h2>Reports &amp; analytics</h2><p>Sales reports will be connected once order records and payment status are verified. Website traffic requires an analytics connection before visitor statistics can be displayed.</p></div>
+          <span class="reports-icon" aria-hidden="true">📊</span>
+        </div>
+      </section>
     </section>
   </main>
   <footer class="site-footer"><p>Hey Sonneblom · Seller workspace</p></footer>
@@ -76,5 +103,28 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="app.js?v=7"></script>
+  <script>
+    (() => {
+      const buttons = [...document.querySelectorAll("[data-admin-tab]")];
+      const panels = [...document.querySelectorAll("[data-admin-panel]")];
+      function showTab(name) {
+        panels.forEach(panel => { panel.hidden = panel.dataset.adminPanel !== name; });
+        buttons.forEach(button => {
+          const active = button.dataset.adminTab === name;
+          button.classList.toggle("active", active);
+          if (active) button.setAttribute("aria-current", "page");
+          else button.removeAttribute("aria-current");
+        });
+      }
+      buttons.forEach(button => button.addEventListener("click", () => showTab(button.dataset.adminTab)));
+      document.querySelectorAll("[data-open-admin-tab]").forEach(button => {
+        button.addEventListener("click", () => {
+          showTab(button.dataset.openAdminTab);
+          document.querySelector(`[data-admin-tab="${button.dataset.openAdminTab}"]`)?.focus();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
